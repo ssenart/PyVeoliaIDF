@@ -38,8 +38,8 @@ class Client(object):
         profile.set_preference('browser.download.dir', self.__tmp_directory)
         profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/csv')
         
+        driver = webdriver.Firefox(executable_path=self.__firefox_webdriver_executable, firefox_profile=profile, options=options, service_log_path=self.__tmp_directory + '/geckodriver.log')
         try:
-            driver = webdriver.Firefox(executable_path=self.__firefox_webdriver_executable, firefox_profile=profile, options=options, service_log_path=self.__tmp_directory + '/geckodriver.log')
             driver.set_window_position(0, 0)
             driver.set_window_size(1200, 1200)
             
@@ -88,7 +88,7 @@ class Client(object):
             os.remove(data_file_path)
             
         finally:
-            # Close the driver
-            driver.close()
+            # Quit the driver
+            driver.quit()
         
 
