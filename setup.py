@@ -4,7 +4,7 @@ import setuptools
 setup(
   name = 'pyveoliaidf',         # How you named your package folder (MyLib)
   packages = ['pyveoliaidf'],   # Chose the same as "name"
-  version = '0.1.3',      # Start with a small number and increase it with every change you make
+  version = '0.1.4',      # Start with a small number and increase it with every change you make
   license='MIT',        # Chose a license from here: https://help.github.com/articles/licensing-a-repository
   description = 'Retrieve water consumption from Veolia Ile-de-France web site (French Water Company)',   # Give a short description about your library
   author = 'Stephane Senart',                   # Type in your name
