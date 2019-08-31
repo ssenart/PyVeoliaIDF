@@ -73,22 +73,25 @@ data = client.data()
 data =>
 [
   {
-    "time": "2019-08-28 07:00:00",
-    "total_liter": "531700",
-    "daily_liter": "346",
-    "type": "Mesur\u00c3\u00a9"
+    "time": "2019-07-14 19:00:00",
+    "total_liter": "506669",
+    "daily_liter": "530",
+    "type": "Estim\u00c3\u00a9",
+    "timestamp": "2019-08-31T16:55:01.236779"
   },
   {
-    "time": "2019-08-29 19:00:00",
-    "total_liter": "533071",
-    "daily_liter": "914",
-    "type": "Mesur\u00c3\u00a9"
+    "time": "2019-07-15 19:00:00",
+    "total_liter": "507523",
+    "daily_liter": "854",
+    "type": "Mesur\u00c3\u00a9",
+    "timestamp": "2019-08-31T16:55:01.236779"
   },
   {
-    "time": "2019-08-30 19:00:00",
-    "total_liter": "533592",
-    "daily_liter": "521",
-    "type": "Mesur\u00c3\u00a9"
+    "time": "2019-07-16 19:00:00",
+    "total_liter": "508314",
+    "daily_liter": "791",
+    "type": "Mesur\u00c3\u00a9",
+    "timestamp": "2019-08-31T16:55:01.236779"
   }
 ]
 ```

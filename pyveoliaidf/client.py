@@ -2,6 +2,7 @@ import os
 import time
 import csv
 from selenium import webdriver
+from datetime import datetime
 from pyveoliaidf.enum import PropertyNameEnum
 
 HOME_URL = 'https://espace-client.vedif.eau.veolia.fr'
@@ -86,6 +87,9 @@ class Client(object):
             download_button_element = driver.find_element_by_xpath("//button[contains(.,'Télécharger la période')]")
             download_button_element.click()
 
+            # Timestamp of the data.
+            data_timestamp = datetime.now().isoformat()
+
             # Wait a few for the download to complete
             time.sleep(10)
 
@@ -95,6 +99,7 @@ class Client(object):
                 # Skip the header line
                 next(dictreader.reader)
                 for row in dictreader:
+                    row[PropertyNameEnum.TIMESTAMP.value] = data_timestamp
                     self.__data.append(dict(row))
 
             # Close the file
