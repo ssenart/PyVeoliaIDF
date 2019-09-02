@@ -1,5 +1,3 @@
-from distutils.core import setup
-
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -24,7 +22,7 @@ setuptools.setup(
   ],
   python_requires='>=3.7',
   download_url = 'https://github.com/ssenart/pyveoliaidf/releases/tag/0.1.9',
-  keywords = ['RESOURCE', 'WATER', 'CONSUMPTION'],   # Keywords that define your package best
+  keywords = ['Resource', 'Water', 'Consumption', 'Veolia', 'Ile-de-France'],
   entry_points={
     'console_scripts': [
         'pyveoliaidf = pyveoliaidf.__main__:main'
