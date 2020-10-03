@@ -101,6 +101,9 @@ class Client(object):
             litres_button_element = driver.find_element_by_xpath("//lightning-button-group[3]/slot/c-icl-button-stateful[2]/button")
             litres_button_element.click()
 
+            # Wait a few for some internal refreshes after the 2 button clicks above.
+            time.sleep(5)
+
             # Download file
             download_button_element = driver.find_element_by_xpath("//button[contains(.,'Télécharger la période')]")
             download_button_element.click()
