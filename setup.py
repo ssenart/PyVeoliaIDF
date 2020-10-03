@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
   name = 'pyveoliaidf',
-  version = '0.1.9',
+  version = '0.1.10',
   author = 'Stephane Senart',
   author_email = 'stephane.senart@gmail.com',
   description = 'Retrieve water consumption from Veolia Ile-de-France web site (French Water Company)',
@@ -21,7 +21,7 @@ setuptools.setup(
     'Programming Language :: Python :: 3.7',    
   ],
   python_requires='>=3.7',
-  download_url = 'https://github.com/ssenart/pyveoliaidf/releases/tag/0.1.9',
+  download_url = 'https://github.com/ssenart/pyveoliaidf/releases/tag/0.1.10',
   keywords = ['Resource', 'Water', 'Consumption', 'Veolia', 'Ile-de-France'],
   entry_points={
     'console_scripts': [

@@ -40,17 +40,23 @@ class Client(object):
         if os.path.isfile(data_file_path):
            os.remove(data_file_path)
 
-        # Initialize the Firefox WebDriver
-        profile = webdriver.FirefoxProfile()
+        # We remove the geckodriver log file
+        geckodriverLogFile = self.__tmp_directory + '/pyveoliaidf_geckodriver.log'
+        if os.path.isfile(geckodriverLogFile):
+            os.remove(geckodriverLogFile)
+
+        # Initialize the Firefox WebDriver        
         options = webdriver.FirefoxOptions()
+        #options.log.level = 'trace'
         options.headless = True
+        profile = webdriver.FirefoxProfile()
         profile.set_preference('browser.download.folderList', 2)  # custom location
         profile.set_preference('browser.download.manager.showWhenStarting', False)
         profile.set_preference('browser.helperApps.alwaysAsk.force', False)
         profile.set_preference('browser.download.dir', self.__tmp_directory)
         profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/csv')
         
-        driver = webdriver.Firefox(executable_path=self.__firefox_webdriver_executable, firefox_profile=profile, options=options, service_log_path=self.__tmp_directory + '/geckodriver.log')
+        driver = webdriver.Firefox(executable_path=self.__firefox_webdriver_executable, firefox_profile=profile, options=options, service_log_path=geckodriverLogFile)
         try:
             driver.set_window_position(0, 0)
             driver.set_window_size(1200, 1200)
@@ -85,7 +91,16 @@ class Client(object):
 
             # Wait a few for the data page load to complete
             time.sleep(5)
-            
+
+            # Click on the "Jours" button : //*[@id="options-512"]/div[4]/div/lightning-button-group[2]/slot/c-icl-button-stateful[1]/button
+
+            jours_button_element = driver.find_element_by_xpath("//lightning-button-group[2]/slot/c-icl-button-stateful/button")
+            jours_button_element.click()
+
+            # Click on the "Litres" button : //*[@id="options-415"]/div[4]/div/lightning-button-group[3]/slot/c-icl-button-stateful[2]/button
+            litres_button_element = driver.find_element_by_xpath("//lightning-button-group[3]/slot/c-icl-button-stateful[2]/button")
+            litres_button_element.click()
+
             # Download file
             download_button_element = driver.find_element_by_xpath("//button[contains(.,'Télécharger la période')]")
             download_button_element.click()
@@ -110,7 +125,9 @@ class Client(object):
 
             # Remove the file
             os.remove(data_file_path)
-            
+
+        except Exception as exception:
+            print(f"Unexpected error occured : {exception}")            
         finally:
             # Quit the driver
             driver.quit()

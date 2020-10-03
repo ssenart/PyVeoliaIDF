@@ -29,7 +29,7 @@ $ cd /path/to/my_project_folder/
 $ virtualenv venv
 ```
 
-### PyGazpar installation
+### PyVeoliaIDF installation
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyVeoliaIDF.
 
 ```bash
@@ -112,4 +112,4 @@ Please make sure to update tests as appropriate.
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
-PyVeoliaIDF has been initiated for integration with [Home Assistant](https://www.home-assistant.io/). This integration work is still on-going.
+PyVeoliaIDF has been initiated for integration with [Home Assistant](https://www.home-assistant.io/).
