@@ -66,7 +66,7 @@ class Client(object):
             driver.get(HOME_URL)
             
             # Fill login form
-            email_element = driver.find_element_by_css_selector("input[type='email']")
+            email_element = driver.find_element_by_css_selector("input[inputmode='email']")
             password_element = driver.find_element_by_css_selector("input[type='password']")
             
             email_element.send_keys(self.__username)
@@ -102,7 +102,7 @@ class Client(object):
             litres_button_element.click()
 
             # Wait a few for some internal refreshes after the 2 button clicks above.
-            time.sleep(5)
+            time.sleep(10)
 
             # Download file
             download_button_element = driver.find_element_by_xpath("//button[contains(.,'Télécharger la période')]")
