@@ -1,0 +1,4 @@
+include pyveolia/resources/hourly_data_sample.json
+include pyveolia/resources/daily_data_sample.json
+include pyveolia/resources/weekly_data_sample.json
+

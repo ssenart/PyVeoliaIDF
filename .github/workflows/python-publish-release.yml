@@ -15,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version:
+        - "3.9"
+        - "3.10"
 
     steps:
 
@@ -41,6 +43,30 @@ jobs:
       run: |
         pip install -r requirements.txt
     
+    - name: Run lint tests
+      run: |
+        flake8 . --count --ignore=E501 --show-source --statistics
+        # stop the build if there are Python syntax errors or undefined names
+        #flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        #flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with pytest
+      env:
+        VEOLIAIDF_USERNAME: ${{ secrets.VEOLIAIDF_USERNAME }}
+        VEOLIAIDF_PASSWORD: ${{ secrets.VEOLIAIDF_PASSWORD }}
+      run: |
+        pytest tests --doctest-modules --junitxml=junit/test-results-${{ matrix.python-version }}.xml --cov=pyveoliaidf --cov-report=xml --cov-report=html --log-cli-level=DEBUG --log-cli-format="%(asctime)s %(levelname)s [%(name)s] %(message)s"
+
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: pytest-results-${{ matrix.python-version }}
+        path: |
+          junit/test-results-${{ matrix.python-version }}.xml
+          tmp/
+      if: ${{ always() }}
+
     - name: Wheel Python Tag creation
       uses: frabert/replace-string-action@master
       id: python-tag
@@ -58,3 +84,4 @@ jobs:
         python updateVersion.py --nextVersion ${{ github.event.release.tag_name }}
         python setup.py sdist bdist_wheel --python-tag ${{ steps.python-tag.outputs.replaced }}
         twine upload --skip-existing dist/*
+      if: github.repository == 'ssenart/PyVeoliaIDF'

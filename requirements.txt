@@ -1,2 +1,6 @@
+python-dotenv
+flake8
+pytest
+openpyxl
 selenium == 3.141
-openpyxl == 2.6.3
+

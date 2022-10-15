@@ -5,30 +5,31 @@ import traceback
 
 from pyveoliaidf.client import Client
 
+
 def main():
     """Main function"""
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--username",
-                      required=True,
-                      help="Veolia IDF username (email)")    
+                        required=True,
+                        help="Veolia IDF username (email)")
     parser.add_argument("-p", "--password",
-                      required=True,
-                      help="Veolia IDF password")    
+                        required=True,
+                        help="Veolia IDF password")
     parser.add_argument("-w", "--webdriver",
-                      required=True,
-                      help="Firefox webdriver executable (geckodriver)")    
+                        required=True,
+                        help="Firefox webdriver executable (geckodriver)")
     parser.add_argument("-s", "--wait_time",
-                      required=False,
-                      type=int,
-                      default=30,
-                      help="Wait time in seconds (see https://selenium-python.readthedocs.io/waits.html for details)")    
+                        required=False,
+                        type=int,
+                        default=30,
+                        help="Wait time in seconds (see https://selenium-python.readthedocs.io/waits.html for details)")
     parser.add_argument("-t", "--tmpdir",
-                      required=False,
-                      help="tmp directory (default is /tmp)")    
+                        required=False,
+                        help="tmp directory (default is /tmp)")
 
     args = parser.parse_args()
 
-    client = Client(args.username, args.password, args.webdriver, args.wait_time, args.tmpdir)
+    client = Client(args.username, args.password, 365, args.webdriver, args.wait_time, args.tmpdir)
 
     try:
         client.update()

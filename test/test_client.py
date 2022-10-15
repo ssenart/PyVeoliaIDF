@@ -1,51 +1,52 @@
-import unittest
-
+import os
 from pyveoliaidf.client import Client
 
 
-class ClientTestCase(unittest.TestCase):
+class TestClient:
 
-    username = ""
-    password = ""
-    webdriver = ""
-    wait_time = 30
-    tmp_directory = ""
+    @classmethod
+    def setup_class(cls):
+        """ setup any state specific to the execution of the given class (which
+        usually contains tests).
+        """
 
-    def test_client(self):
-        client = Client(self.username, self.password, self.webdriver, self.wait_time, self.tmp_directory)
+    @classmethod
+    def teardown_class(cls):
+        """ teardown any state that was previously setup with a call to
+        setup_class.
+        """
+
+    def setup_method(self, method):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
+        tmpdir = os.path.normpath(f"{os.getcwd()}/tmp")
+
+        # We create the tmp directory if not already exists.
+        if not os.path.exists(tmpdir):
+            os.mkdir(tmpdir)
+
+        # We remove the geckodriver log file
+        geckodriverLogFile = f"{tmpdir}/pyveoliaidf_geckodriver.log"
+        if os.path.isfile(geckodriverLogFile):
+            os.remove(geckodriverLogFile)
+
+        self.__username = os.environ["VEOLIAIDF_USERNAME"]
+        self.__password = os.environ["VEOLIAIDF_PASSWORD"]
+        if os.name == 'nt':
+            self.__webdriver = "./drivers/geckodriver.exe"
+        else:
+            self.__webdriver = "./drivers/geckodriver"
+        self.__wait_time = 30
+        self.__tmp_directory = tmpdir
+
+    def teardown_method(self, method):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
+
+    def test_hourly_live(self):
+        client = Client(self.__username, self.__password, self.__webdriver, self.__wait_time, self.__tmp_directory)
         client.update()
 
-        assert len(client.data) != 0
-
-
-if __name__ == "__main__":
-
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument("-u", "--username",
-                        required=True,
-                        help="Veolia IDF username (email)")
-    parser.add_argument("-p", "--password",
-                        required=True,
-                        help="Veolia IDF password")
-    parser.add_argument("-w", "--webdriver",
-                        required=True,
-                        help="Firefox webdriver executable (geckodriver)")
-    parser.add_argument("-s", "--wait_time",
-                        required=False,
-                        type=int,
-                        default=30,
-                        help="Wait time in seconds (see https://selenium-python.readthedocs.io/waits.html for details)")
-    parser.add_argument("-t", "--tmpdir",
-                        required=False,
-                        help="tmp directory (default is /tmp)")
-
-    args = parser.parse_args()
-
-    ClientTestCase.username = args.username
-    ClientTestCase.password = args.password
-    ClientTestCase.webdriver = args.webdriver
-    ClientTestCase.tmp_directory = args.tmpdir
-    ClientTestCase.wait_time = args.wait_time
-
-    unittest.main()
+        assert len(client.data()) > 0
