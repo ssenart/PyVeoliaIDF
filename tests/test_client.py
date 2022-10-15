@@ -1,4 +1,5 @@
 import os
+import pytest
 from dotenv import load_dotenv
 from pyveoliaidf.client import Client
 
@@ -48,6 +49,7 @@ class TestClient:
         call.
         """
 
+    @pytest.mark.skip(reason="Requires Selenium")
     def test_daily(self):
         client = Client(self.__username, self.__password, 5, self.__webdriver, self.__wait_time, self.__tmp_directory)
         client.update()
