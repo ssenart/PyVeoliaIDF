@@ -4,7 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.13](https://github.com/ssenart/PyVeoliaIDF/compare/0.1.12...0.1.13) - 2021-12-03
+## [0.2.0] - 2022-10-17
+
+### Added 
+- Add a new parameter 'lastNDays' that permits to control how many days of data we want to retrieve.
+
+### Fixed
+- Add some means that permits to log every Selenium actions.
+- Add some controls on the downloaded data file (check its content) before processing it.
+
+## [0.1.13] - 2021-12-03
 ### Fixed
 - Increase waiting time after selection of 'Jours' and 'Litres' buttons. Sometimes, we get only a partial set of data with missing most recent ones.
 

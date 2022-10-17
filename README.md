@@ -58,6 +58,7 @@ import pyveoliaidf
 
 client = pyveoliaidf.Client('your login',
                          'your password',
+                         365,
                          'path/to/Selenium Web Driver',
                          30,
                          'temporary directory where to store CSV file (ex: /tmp)')
