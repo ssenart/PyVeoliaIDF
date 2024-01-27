@@ -43,7 +43,7 @@ class WebDriverWrapper:
         options = webdriver.FirefoxOptions()
 
         # options.log.level = 'trace'
-        options.binary_location = "C:/Program Files/Mozilla Firefox/firefox.exe"
+        options.binary_location = "/usr/bin/firefox"
         if headLessMode:
             options.add_argument("--headless")
         options.profile = profile
