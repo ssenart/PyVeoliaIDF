@@ -86,14 +86,14 @@ class Client(object):
             # Wait a few for the data page load to complete
             time.sleep(5)
 
-            # Click on the "Jours" button. 
+            # Click on the "Jours" button.
             jours_button_element = driver.find_element_by_xpath("//lightning-button-group[2]/div/slot/c-icl-button-stateful[1]/button", "Historique page: 'Jours' button")
             jours_button_element.click()
 
             # Wait a few for some internal refreshes.
             time.sleep(10)
 
-            # Click on the "Litres" button. 
+            # Click on the "Litres" button.
             litres_button_element = driver.find_element_by_xpath("//lightning-button-group[3]/div/slot/c-icl-button-stateful[2]/button", "Historique page: 'Litres' button")
             litres_button_element.click()
 
