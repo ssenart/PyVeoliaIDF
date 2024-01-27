@@ -1,6 +1,7 @@
 import os
 import logging
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from .webelementwrapper import WebElementWrapper
 
 
@@ -30,10 +31,7 @@ class WebDriverWrapper:
         # Geckodriver log file.
         geckodriverLogFile = f"{self.__tmp_directory}/veoliaidf_geckodriver.log"
 
-        # Initialize the Firefox WebDriver
-        options = webdriver.FirefoxOptions()
-        # options.log.level = 'trace'
-        options.headless = headLessMode
+        # Create Firefox profile
         profile = webdriver.FirefoxProfile()
         profile.set_preference('browser.download.folderList', 2)  # 2 indicates a custom (see: browser.download.dir) folder.
         profile.set_preference('browser.download.manager.showWhenStarting', False)  # Whether or not to show the Downloads window when a download begins.
@@ -41,7 +39,20 @@ class WebDriverWrapper:
         profile.set_preference('browser.download.dir', self.__tmp_directory)
         profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/csv')
 
-        self.__driver = webdriver.Firefox(executable_path=self.__firefox_webdriver_executable, firefox_profile=profile, options=options, service_log_path=geckodriverLogFile)
+        # Initialize the Firefox WebDriver
+        options = webdriver.FirefoxOptions()
+
+        # options.log.level = 'trace'
+        options.binary_location = "C:/Program Files/Mozilla Firefox/firefox.exe"
+        if headLessMode:
+            options.add_argument("--headless")
+        options.profile = profile
+
+        # Create Firefox service
+        service = webdriver.FirefoxService(executable_path=self.__firefox_webdriver_executable, log_path=geckodriverLogFile)
+
+        # Create Firefox webdriver
+        self.__driver = webdriver.Firefox(options=options, service=service)
 
         self.__driver.set_window_position(0, 0)
         self.__driver.set_window_size(1920, 1200)
@@ -91,7 +102,7 @@ class WebDriverWrapper:
 
         WebDriverWrapper.logger.debug(f"find_element_by_id('{id}'): {description}...")
         try:
-            element = self.__driver.find_element_by_id(id)
+            element = self.__driver.find_element(By.ID, id)
             res = WebElementWrapper(element, description, self.__tmp_directory)
             WebDriverWrapper.logger.debug(f"find_element_by_id('{id}'): {description} -> Ok")
             return res
@@ -109,7 +120,7 @@ class WebDriverWrapper:
 
         WebDriverWrapper.logger.debug(f"find_element_by_xpath('{xpath}'): {description}...")
         try:
-            element = self.__driver.find_element_by_xpath(xpath)
+            element = self.__driver.find_element(By.XPATH, xpath)
             res = WebElementWrapper(element, description, self.__tmp_directory)
             WebDriverWrapper.logger.debug(f"find_element_by_xpath('{xpath}'): {description} -> Ok")
             return res
@@ -127,7 +138,7 @@ class WebDriverWrapper:
 
         WebDriverWrapper.logger.debug(f"find_element_by_css_selector('{css_selector}'): {description}...")
         try:
-            element = self.__driver.find_element_by_css_selector(css_selector)
+            element = self.__driver.find_element(By.CSS_SELECTOR, css_selector)
             res = WebElementWrapper(element, description, self.__tmp_directory)
             WebDriverWrapper.logger.debug(f"find_element_by_css_selector('{css_selector}'): {description} -> Ok")
             return res
@@ -145,7 +156,7 @@ class WebDriverWrapper:
 
         WebDriverWrapper.logger.debug(f"find_element_by_class_name('{name}'): {description}...")
         try:
-            element = self.__driver.find_element_by_class_name(name)
+            element = self.__driver.find_element(By.CLASS_NAME, name)
             res = WebElementWrapper(element, description, self.__tmp_directory)
             WebDriverWrapper.logger.debug(f"find_element_by_class_name('{name}'): {description} -> Ok")
             return res

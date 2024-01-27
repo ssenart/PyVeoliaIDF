@@ -38,7 +38,7 @@ class TestClient:
         self.__username = os.environ["VEOLIAIDF_USERNAME"]
         self.__password = os.environ["VEOLIAIDF_PASSWORD"]
         if os.name == 'nt':
-            self.__webdriver = "./drivers/geckodriver.exe"
+            self.__webdriver = "./drivers/geckodriver-0.34.exe"
         else:
             self.__webdriver = "./drivers/geckodriver"
         self.__wait_time = 30

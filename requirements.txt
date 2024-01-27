@@ -2,5 +2,5 @@ python-dotenv
 flake8
 pytest
 openpyxl
-selenium == 3.141
-
+selenium == 4.17.2
+requests

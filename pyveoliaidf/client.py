@@ -60,8 +60,8 @@ class Client(object):
             driver.get(HOME_URL, "Go to VeoliaIDF login page")
 
             # Fill login form.
-            email_element = driver.find_element_by_css_selector("input[inputmode='email']", "Login page: Email text field")
-            password_element = driver.find_element_by_css_selector("input[type='password']", "Login page: Password text field")
+            email_element = driver.find_element_by_xpath("//*[@id='input-9']", "Login page: Email text field")
+            password_element = driver.find_element_by_xpath("//*[@id='66:2;a']", "Login page: Password text field")
 
             email_element.send_keys(self.__username)
             password_element.send_keys(self.__password)
@@ -86,15 +86,15 @@ class Client(object):
             # Wait a few for the data page load to complete
             time.sleep(5)
 
-            # Click on the "Jours" button : //*[@id="options-512"]/div[4]/div/lightning-button-group[2]/slot/c-icl-button-stateful[1]/button
-            jours_button_element = driver.find_element_by_xpath("//lightning-button-group[2]/slot/c-icl-button-stateful/button", "Historique page: 'Jours' button")
+            # Click on the "Jours" button. 
+            jours_button_element = driver.find_element_by_xpath("//lightning-button-group[2]/div/slot/c-icl-button-stateful[1]/button", "Historique page: 'Jours' button")
             jours_button_element.click()
 
             # Wait a few for some internal refreshes.
             time.sleep(10)
 
-            # Click on the "Litres" button : //*[@id="options-415"]/div[4]/div/lightning-button-group[3]/slot/c-icl-button-stateful[2]/button
-            litres_button_element = driver.find_element_by_xpath("//lightning-button-group[3]/slot/c-icl-button-stateful[2]/button", "Historique page: 'Litres' button")
+            # Click on the "Litres" button. 
+            litres_button_element = driver.find_element_by_xpath("//lightning-button-group[3]/div/slot/c-icl-button-stateful[2]/button", "Historique page: 'Litres' button")
             litres_button_element.click()
 
             # Wait a few for some internal refreshes.
@@ -106,11 +106,13 @@ class Client(object):
             startDate = endDate + datetime.timedelta(days=-self.__lastNDays)
 
             # Fill the start date text field.
-            start_date_element = driver.find_element_by_xpath("//input[@id='input-51']", "Historique page: 'Start date' text field")
+            start_date_element = driver.find_element_by_xpath("//*[@id='input-59']", "Historique page: 'Start date' text field")
+            start_date_element.clear()
             start_date_element.send_keys(startDate.strftime(dateFormat))
 
             # Fill the end date text field.
-            end_date_element = driver.find_element_by_xpath("//input[@id='input-55']", "Historique page: 'End date' text field")
+            end_date_element = driver.find_element_by_xpath("//*[@id='input-63']", "Historique page: 'End date' text field")
+            end_date_element.clear()
             end_date_element.send_keys(endDate.strftime(dateFormat))
 
             # Wait a few for some internal refreshes.
@@ -156,8 +158,5 @@ class Client(object):
             Logger.error("An unexpected error occured while updating the data", exc_info=True)
             raise
         finally:
-            # Close the file
-            csvfile.close()
-
             # Quit the driver
             driver.quit()
