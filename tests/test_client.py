@@ -38,9 +38,11 @@ class TestClient:
         self.__username = os.environ["VEOLIAIDF_USERNAME"]
         self.__password = os.environ["VEOLIAIDF_PASSWORD"]
         if os.name == 'nt':
-            self.__webdriver = "./drivers/geckodriver-0.34.exe"
+            self.__webdriver = "./drivers/geckodriver.exe"
+            self.__firefox_binary_location = "C:/Program Files/Mozilla Firefox/firefox.exe"
         else:
             self.__webdriver = "./drivers/geckodriver"
+            self.__firefox_binary_location = "/usr/bin/firefox"
         self.__wait_time = 30
         self.__tmp_directory = tmpdir
 
@@ -51,7 +53,7 @@ class TestClient:
 
     @pytest.mark.skip(reason="Requires Selenium")
     def test_daily(self):
-        client = Client(self.__username, self.__password, 5, self.__webdriver, self.__wait_time, self.__tmp_directory)
+        client = Client(self.__username, self.__password, 5, self.__webdriver, self.__firefox_binary_location, self.__wait_time, self.__tmp_directory)
         client.update()
 
         assert len(client.data()) > 0

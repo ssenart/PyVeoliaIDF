@@ -8,7 +8,7 @@ from pyveoliaidf.webdriverwrapper import WebDriverWrapper
 from typing import Any
 
 
-HOME_URL = 'https://espace-client.vedif.eau.veolia.fr'
+HOME_URL = 'https://connexion.leaudiledefrance.fr'
 LOGIN_URL = HOME_URL + '/s/login'
 WELCOME_URL = HOME_URL + '/s/'
 DATA_URL = HOME_URL + '/s/historique'
@@ -16,6 +16,7 @@ DATA_FILENAME = 'historique_jours_litres.csv'
 
 DEFAULT_TMP_DIRECTORY = '/tmp'
 DEFAULT_FIREFOX_WEBDRIVER = os.getcwd() + '/geckodriver'
+DEFAULT_FIREFOX_BINARY_LOCATION = "/usr/bin/firefox"
 DEFAULT_WAIT_TIME = 30
 DEFAULT_LAST_N_DAYS = 365
 
@@ -29,10 +30,11 @@ class LoginError(Exception):
 
 class Client(object):
 
-    def __init__(self, username, password, lastNDays: int = DEFAULT_LAST_N_DAYS, firefox_webdriver_executable=DEFAULT_FIREFOX_WEBDRIVER, wait_time=DEFAULT_WAIT_TIME, tmp_directory=DEFAULT_TMP_DIRECTORY):
+    def __init__(self, username, password, lastNDays: int = DEFAULT_LAST_N_DAYS, firefox_webdriver_executable=DEFAULT_FIREFOX_WEBDRIVER, firefox_binary_location=DEFAULT_FIREFOX_BINARY_LOCATION, wait_time=DEFAULT_WAIT_TIME, tmp_directory=DEFAULT_TMP_DIRECTORY):
         self.__username = username
         self.__password = password
         self.__firefox_webdriver_executable = firefox_webdriver_executable
+        self.__firefox_binary_location = firefox_binary_location
         self.__wait_time = wait_time
         self.__tmp_directory = tmp_directory
         self.__lastNDays = lastNDays
@@ -53,14 +55,14 @@ class Client(object):
             os.remove(data_file_path)
 
         # Create the WebDriver with the ability to log and take screenshot for debugging.
-        driver = WebDriverWrapper(self.__firefox_webdriver_executable, self.__wait_time, self.__tmp_directory, True)
+        driver = WebDriverWrapper(self.__firefox_webdriver_executable, self.__firefox_binary_location, self.__wait_time, self.__tmp_directory, True)
 
         try:
             # Go to login page.
             driver.get(HOME_URL, "Go to VeoliaIDF login page")
 
             # Fill login form.
-            email_element = driver.find_element_by_xpath("//*[@id='input-9']", "Login page: Email text field")
+            email_element = driver.find_element_by_xpath("//*[@id='input-7']", "Login page: Email text field")
             password_element = driver.find_element_by_xpath("//*[@id='66:2;a']", "Login page: Password text field")
 
             email_element.send_keys(self.__username)
@@ -87,14 +89,14 @@ class Client(object):
             time.sleep(5)
 
             # Click on the "Jours" button.
-            jours_button_element = driver.find_element_by_xpath("//lightning-button-group[2]/div/slot/c-icl-button-stateful[1]/button", "Historique page: 'Jours' button")
+            jours_button_element = driver.find_element_by_xpath("//div[4]/lightning-button-group/div/slot/c-icl-button-stateful/button", "Historique page: 'Jours' button")
             jours_button_element.click()
 
             # Wait a few for some internal refreshes.
             time.sleep(10)
 
             # Click on the "Litres" button.
-            litres_button_element = driver.find_element_by_xpath("//lightning-button-group[3]/div/slot/c-icl-button-stateful[2]/button", "Historique page: 'Litres' button")
+            litres_button_element = driver.find_element_by_xpath("//div[5]/lightning-button-group/div/slot/c-icl-button-stateful[2]/button", "Historique page: 'Litres' button")
             litres_button_element.click()
 
             # Wait a few for some internal refreshes.
@@ -106,12 +108,12 @@ class Client(object):
             startDate = endDate + datetime.timedelta(days=-self.__lastNDays)
 
             # Fill the start date text field.
-            start_date_element = driver.find_element_by_xpath("//*[@id='input-59']", "Historique page: 'Start date' text field")
+            start_date_element = driver.find_element_by_xpath("//*[@id='input-75']", "Historique page: 'Start date' text field")
             start_date_element.clear()
             start_date_element.send_keys(startDate.strftime(dateFormat))
 
             # Fill the end date text field.
-            end_date_element = driver.find_element_by_xpath("//*[@id='input-63']", "Historique page: 'End date' text field")
+            end_date_element = driver.find_element_by_xpath("//*[@id='input-79']", "Historique page: 'End date' text field")
             end_date_element.clear()
             end_date_element.send_keys(endDate.strftime(dateFormat))
 

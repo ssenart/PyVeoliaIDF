@@ -11,7 +11,7 @@ class WebDriverWrapper:
     logger = logging.getLogger(__name__)
 
     # ------------------------------------------------------
-    def __init__(self, firefox_webdriver_executable: str, wait_time: int, tmp_directory: str, headLessMode: bool):
+    def __init__(self, firefox_webdriver_executable: str, firefox_binary_location: str, wait_time: int, tmp_directory: str, headLessMode: bool):
 
         self.__firefox_webdriver_executable = firefox_webdriver_executable
         self.__wait_time = wait_time
@@ -43,7 +43,7 @@ class WebDriverWrapper:
         options = webdriver.FirefoxOptions()
 
         # options.log.level = 'trace'
-        options.binary_location = "/usr/bin/firefox"
+        options.binary_location = firefox_binary_location
         if headLessMode:
             options.add_argument("--headless")
         options.profile = profile
