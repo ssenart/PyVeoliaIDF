@@ -73,8 +73,8 @@ class Client(object):
 
             # Once we find the 'Historique' button from the main page, we are logged on successfully.
             try:
-                historique_button_element = driver.find_element_by_xpath("//span[contains(.,'HISTORIQUE')]", "Welcome page: 'Historique' menu item")
-                historique_button_element.click()
+                contrats_button_element = driver.find_element_by_xpath("//span[contains(.,'Contrats')]", "Welcome page: 'Contrats' menu item")
+                contrats_button_element.click()
             except Exception:
                 # Perhaps, login has failed.
                 if driver.current_url == WELCOME_URL:
@@ -88,15 +88,21 @@ class Client(object):
             # Wait a few for the data page load to complete
             time.sleep(5)
 
+            contrat_button_element = driver.find_element_by_xpath("//c-icl-contrat-list-contrat-row[2]/div/div[2]/span/a", "Liste des contrats")
+            contrat_button_element.click()
+
+            historique_button_element = driver.find_element_by_xpath("//span[contains(.,'Historique')]", "Contrat page: 'Historique' menu item")
+            historique_button_element.click()
+
             # Click on the "Jours" button.
-            jours_button_element = driver.find_element_by_xpath("//div[4]/lightning-button-group/div/slot/c-icl-button-stateful/button", "Historique page: 'Jours' button")
+            jours_button_element = driver.find_element_by_xpath("//div[4]/lightning-button-group/div/slot/c-icl-button-stateful/button", "Contrat page: 'Jours' button")
             jours_button_element.click()
 
             # Wait a few for some internal refreshes.
             time.sleep(10)
 
             # Click on the "Litres" button.
-            litres_button_element = driver.find_element_by_xpath("//div[5]/lightning-button-group/div/slot/c-icl-button-stateful[2]/button", "Historique page: 'Litres' button")
+            litres_button_element = driver.find_element_by_xpath("//div[5]/lightning-button-group/div/slot/c-icl-button-stateful[2]/button", "Contrat page: 'Litres' button")
             litres_button_element.click()
 
             # Wait a few for some internal refreshes.
@@ -108,12 +114,12 @@ class Client(object):
             startDate = endDate + datetime.timedelta(days=-self.__lastNDays)
 
             # Fill the start date text field.
-            start_date_element = driver.find_element_by_xpath("//*[@id='input-75']", "Historique page: 'Start date' text field")
+            start_date_element = driver.find_element_by_xpath("//*[@name='from']", "Contrat page: 'Start date' text field")
             start_date_element.clear()
             start_date_element.send_keys(startDate.strftime(dateFormat))
 
             # Fill the end date text field.
-            end_date_element = driver.find_element_by_xpath("//*[@id='input-79']", "Historique page: 'End date' text field")
+            end_date_element = driver.find_element_by_xpath("//*[@name='to']", "Contrat page: 'End date' text field")
             end_date_element.clear()
             end_date_element.send_keys(endDate.strftime(dateFormat))
 
@@ -121,7 +127,7 @@ class Client(object):
             time.sleep(10)
 
             # Download file
-            download_button_element = driver.find_element_by_xpath("//button[contains(.,'Télécharger la période')]", "Historique page: 'Télécharger la période' button")
+            download_button_element = driver.find_element_by_xpath("//button[contains(.,'Télécharger la période')]", "Contrat page: 'Télécharger la période' button")
             download_button_element.click()
 
             # Timestamp of the data.
