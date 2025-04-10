@@ -63,7 +63,7 @@ class Client(object):
 
             # Fill login form.
             email_element = driver.find_element_by_xpath("//*[@id='input-7']", "Login page: Email text field")
-            password_element = driver.find_element_by_xpath("//*[@id='66:2;a']", "Login page: Password text field")
+            password_element = driver.find_element_by_xpath("//*[@id='164:0']", "Login page: Password text field")
 
             email_element.send_keys(self.__username)
             password_element.send_keys(self.__password)
