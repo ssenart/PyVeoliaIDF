@@ -71,28 +71,11 @@ class Client(object):
             submit_button_element = driver.find_element_by_class_name('submit-button', "Login page: 'Valider' button")
             submit_button_element.click()
 
-            # Once we find the 'Historique' button from the main page, we are logged on successfully.
-            try:
-                contrats_button_element = driver.find_element_by_xpath("//span[contains(.,'Contrats')]", "Welcome page: 'Contrats' menu item")
-                contrats_button_element.click()
-            except Exception:
-                # Perhaps, login has failed.
-                if driver.current_url == WELCOME_URL:
-                    # We're good.
-                    pass
-                elif driver.current_url.startswith(LOGIN_URL):
-                    raise LoginError("Veolia sign in has failed, please check your username/password")
-                else:
-                    raise
+            consommation_menu = driver.find_element_by_xpath("/html/body/div[3]/div[1]/div/div/div/div[1]/div/ul/li[3]/a/div/span", "Welcome page: 'Consommation' menu item")
+            consommation_menu.click()
 
             # Wait a few for the data page load to complete
             time.sleep(5)
-
-            contrat_button_element = driver.find_element_by_xpath("//c-icl-contrat-list-contrat-row[2]/div/div[2]/span/a", "Liste des contrats")
-            contrat_button_element.click()
-
-            historique_button_element = driver.find_element_by_xpath("//span[contains(.,'Historique')]", "Contrat page: 'Historique' menu item")
-            historique_button_element.click()
 
             # Click on the "Jours" button.
             jours_button_element = driver.find_element_by_xpath("//div[4]/lightning-button-group/div/slot/c-icl-button-stateful/button", "Contrat page: 'Jours' button")
