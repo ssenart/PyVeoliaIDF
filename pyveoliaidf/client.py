@@ -63,7 +63,7 @@ class Client(object):
 
             # Fill login form.
             email_element = driver.find_element_by_xpath("//*[@id='input-8']", "Login page: Email text field")
-            password_element = driver.find_element_by_xpath("//*[@id='166:0']", "Login page: Password text field")
+            password_element = driver.find_element_by_xpath("//*[@id='167:0']", "Login page: Password text field")
 
             email_element.send_keys(self.__username)
             password_element.send_keys(self.__password)
@@ -71,7 +71,8 @@ class Client(object):
             submit_button_element = driver.find_element_by_class_name('submit-button', "Login page: 'Valider' button")
             submit_button_element.click()
 
-            consommation_menu = driver.find_element_by_xpath("/html/body/div[3]/div[1]/div/div/div/div[1]/div/ul/li[3]/a/div/span", "Welcome page: 'Consommation' menu item")
+            # Click on the button "Consulter l'historique".
+            consommation_menu = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div/div/div[2]/div/div/c-icl-accueil/c-icl-accueil-mono-contrat/div/div[3]/div[3]/c-icl-accueil-mono-contrat-consommation-facture/div/div[2]/div/c-icl-button/button/span", "Welcome page: 'Consommation' menu item")
             consommation_menu.click()
 
             # Wait a few for the data page load to complete
