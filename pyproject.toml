@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyveoliaidf"
+version = "0.4.5"
+description = "Retrieve water consumption from Veolia Ile-de-France web site (French Water Company)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
+authors = [{ name = "Stephane Senart", email = "stephane.senart@gmail.com" }]
+keywords = ["Resource", "Water", "Meter", "Consumption", "Veolia", "Ile-de-France"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Topic :: Software Development :: Libraries",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "selenium>=4.50.0",
+    "openpyxl>=2.6.3",
+]
+
+[project.urls]
+Home = "https://github.com/ssenart/pyveoliaidf"
+Source = "https://github.com/ssenart/pyveoliaidf"
+Issues = "https://github.com/ssenart/pyveoliaidf/issues"
+Changelog = "https://github.com/ssenart/pyveoliaidf/blob/master/CHANGELOG.md"
+Download = "https://pypi.org/project/pyveoliaidf"
+
+[project.scripts]
+pyveoliaidf = "pyveoliaidf.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pyveoliaidf"]
+
+[dependency-groups]
+dev = [
+    "flake8",
+    "pytest",
+    "pytest-cov",
+    "python-dotenv",
+]
+
+[tool.uv]
+# The development environment is made of the dependency groups above.
+# The package itself is installed in editable mode by `uv sync`.

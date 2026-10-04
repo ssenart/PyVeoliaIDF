@@ -11,7 +11,7 @@ class WebDriverWrapper:
     logger = logging.getLogger(__name__)
 
     # ------------------------------------------------------
-    def __init__(self, firefox_webdriver_executable: str, firefox_binary_location: str, wait_time: int, tmp_directory: str, headLessMode: bool):
+    def __init__(self, firefox_webdriver_executable: str | None, firefox_binary_location: str, wait_time: int, tmp_directory: str, headLessMode: bool):
 
         self.__firefox_webdriver_executable = firefox_webdriver_executable
         self.__wait_time = wait_time
@@ -48,8 +48,8 @@ class WebDriverWrapper:
             options.add_argument("--headless")
         options.profile = profile
 
-        # Create Firefox service
-        service = webdriver.FirefoxService(executable_path=self.__firefox_webdriver_executable, log_path=geckodriverLogFile)
+        # Create Firefox service. Without an explicit geckodriver path, Selenium Manager finds or downloads the right one.
+        service = webdriver.FirefoxService(executable_path=self.__firefox_webdriver_executable, log_output=geckodriverLogFile)
 
         # Create Firefox webdriver
         self.__driver = webdriver.Firefox(options=options, service=service)

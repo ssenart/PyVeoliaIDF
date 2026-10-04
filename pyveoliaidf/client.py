@@ -15,7 +15,8 @@ DATA_URL = HOME_URL + '/s/historique'
 DATA_FILENAME = 'historique_jours_litres.csv'
 
 DEFAULT_TMP_DIRECTORY = '/tmp'
-DEFAULT_FIREFOX_WEBDRIVER = os.getcwd() + '/geckodriver'
+# None lets Selenium Manager find or download geckodriver
+DEFAULT_FIREFOX_WEBDRIVER = None
 DEFAULT_FIREFOX_BINARY_LOCATION = "/usr/bin/firefox"
 DEFAULT_WAIT_TIME = 30
 DEFAULT_LAST_N_DAYS = 365
@@ -72,7 +73,7 @@ class Client(object):
             submit_button_element.click()
 
             # Click on the button "Consulter l'historique".
-            consommation_menu = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div/div/div[2]/div/div/c-icl-accueil/c-icl-accueil-mono-contrat/div/div[3]/div[3]/c-icl-accueil-mono-contrat-consommation-facture/div/div[2]/div/c-icl-button/button/span", "Welcome page: 'Consommation' menu item")
+            consommation_menu = driver.find_element_by_xpath("//button[contains(translate(., 'HISTORIQUE', 'historique'), 'historique')]", "Welcome page: 'Consulter l'historique' button")
             consommation_menu.click()
 
             # Wait a few for the data page load to complete
@@ -140,6 +141,12 @@ class Client(object):
 
             # Remove the header from the data.
             del (self.__data[0])
+
+            # Log how much data has been retrieved, and over which period.
+            if self.__data:
+                Logger.info(f"Retrieved {len(self.__data)} records from {self.__data[0][PropertyNameEnum.TIME.value]} to {self.__data[-1][PropertyNameEnum.TIME.value]}")
+            else:
+                Logger.warning("No records retrieved from the data file")
 
             # Remove the file
             os.remove(data_file_path)

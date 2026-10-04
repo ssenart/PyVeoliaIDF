@@ -1,0 +1,52 @@
+name: "python-test"
+description: "Python testing workflow"
+
+inputs:
+  python-version:
+    description: "Python version"
+    required: true
+    default: "3.12"
+
+runs:
+  using: "composite"
+  steps:
+    #----------------------------------------------
+    #  Set-up python
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    #----------------------------------------------
+    # Install uv
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+
+    #----------------------------------------------
+    # Install Firefox (used by the Selenium tests)
+    - name: Install Firefox
+      shell: bash
+      run: |
+        sudo apt -y update
+        sudo apt -y install firefox
+        sudo apt -y --only-upgrade install firefox
+
+    #----------------------------------------------
+    # Install project (fails if uv.lock is out of date)
+    - name: Install project
+      shell: bash
+      run: uv sync --locked --python ${{ inputs.python-version }}
+
+    #----------------------------------------------
+    # Run tests
+    - name: Test with pytest
+      shell: bash
+      run: uv run pytest tests --doctest-modules --junitxml=junit/test-results-${{ inputs.python-version }}.xml --cov=pyveoliaidf --cov-report=xml --cov-report=html --log-cli-level=DEBUG --log-cli-format="%(asctime)s %(levelname)s [%(name)s] %(message)s"
+
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: pytest-results-${{ inputs.python-version }}
+        path: |
+          junit/test-results-${{ inputs.python-version }}.xml
+          tmp/
+      if: ${{ always() }}

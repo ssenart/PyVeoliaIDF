@@ -16,8 +16,9 @@ def main():
                         required=True,
                         help="Veolia IDF password")
     parser.add_argument("-w", "--webdriver",
-                        required=True,
-                        help="Firefox webdriver executable (geckodriver)")
+                        required=False,
+                        default=None,
+                        help="Firefox webdriver executable (geckodriver). Default: found or downloaded by Selenium Manager")
     parser.add_argument("-s", "--wait_time",
                         required=False,
                         type=int,
@@ -25,11 +26,12 @@ def main():
                         help="Wait time in seconds (see https://selenium-python.readthedocs.io/waits.html for details)")
     parser.add_argument("-t", "--tmpdir",
                         required=False,
+                        default="/tmp",
                         help="tmp directory (default is /tmp)")
 
     args = parser.parse_args()
 
-    client = Client(args.username, args.password, 365, args.webdriver, args.wait_time, args.tmpdir)
+    client = Client(args.username, args.password, 365, args.webdriver, wait_time=args.wait_time, tmp_directory=args.tmpdir)
 
     try:
         client.update()

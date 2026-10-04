@@ -17,8 +17,8 @@ PyVeoliaIDF has been developped and tested with Firefox browser (version 68.8) a
 #### Firefox browser installation
 Follow instructions [here](https://www.mozilla.org/fr/firefox/new)
 
-#### Firefox Web Driver (geckodriver) installation
-Follow instructions [here](https://github.com/mozilla/geckodriver/releases)
+#### Firefox Web Driver (geckodriver)
+Nothing to install: Selenium Manager (included with Selenium) finds or downloads the geckodriver matching your system. To use a specific geckodriver, pass its path with `-w` on the command line, or as `firefox_webdriver_executable` to `Client`. Releases are listed [here](https://github.com/mozilla/geckodriver/releases).
 
 ### Create your virtual environment
 ```bash
@@ -40,7 +40,16 @@ You can also download the source code and install it manually.
 
 ```bash
 cd /path/to/pyveoliaidf/
-python setup.py install
+pip install .
+```
+
+### Development environment
+The project is managed with [uv](https://docs.astral.sh/uv/). It creates the virtual environment, installs the dependencies and runs the tests from the locked versions in `uv.lock`.
+
+```bash
+cd /path/to/pyveoliaidf/
+uv sync
+uv run pytest tests
 ```
 
 ## Usage

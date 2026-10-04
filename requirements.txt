@@ -1,6 +1,0 @@
-python-dotenv
-flake8
-pytest
-openpyxl
-selenium == 4.17.2
-requests

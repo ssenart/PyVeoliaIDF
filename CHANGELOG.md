@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- The client logs how many records it retrieved, and the period they cover.
+
+### Changed
+- Selenium is required as `>=4.50.0` (was pinned to `4.17.2`). Selenium 4.50 requires Python 3.10 or newer, so Python 3.9 is no longer supported.
+- geckodriver is found or downloaded by Selenium Manager, which ships with Selenium, when no driver path is given. The `-w/--webdriver` option is optional, and the bundled `drivers/` folder has been removed.
+- The "Consulter l'historique" button is located by its text instead of a fixed XPath.
+- The project is managed with uv: `pyproject.toml` (hatchling build, `dev` dependency group) and `uv.lock`. The version is set in `pyproject.toml`, and `pyveoliaidf.__version__` is read from the installed package metadata.
+- The GitHub workflows are rewritten: CI runs on pushes and pull requests, and releases are created manually with version checks and PyPI trusted publishing. The automatic TestPyPI publish on every push is removed.
+- The README describes the uv development setup and the Selenium Manager driver.
+
+### Fixed
+- Selenium 4.50 no longer accepts `log_path`, so the geckodriver log is written with `log_output` again.
+- The command-line tool passed its arguments to `Client` in the wrong order, so the wait time was used as the Firefox binary path and the temporary directory was ignored.
+
+### Removed
+- `setup.py`, `setup.cfg`, `requirements.txt`, `MANIFEST.in`, `version.py` and `updateVersion.py`, replaced by `pyproject.toml` and the uv tooling.
+- The `requests` development dependency, which was not used.
+
 ## [0.4.5] - 2025-10-06
 
 ### Fixed

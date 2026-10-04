@@ -37,11 +37,11 @@ class TestClient:
 
         self.__username = os.environ["VEOLIAIDF_USERNAME"]
         self.__password = os.environ["VEOLIAIDF_PASSWORD"]
+        # geckodriver is found or downloaded by Selenium Manager (None means no explicit path).
+        self.__webdriver = None
         if os.name == 'nt':
-            self.__webdriver = "./drivers/geckodriver.exe"
             self.__firefox_binary_location = "C:/Program Files/Mozilla Firefox/firefox.exe"
         else:
-            self.__webdriver = "./drivers/geckodriver"
             self.__firefox_binary_location = "/usr/bin/firefox"
         self.__wait_time = 30
         self.__tmp_directory = tmpdir

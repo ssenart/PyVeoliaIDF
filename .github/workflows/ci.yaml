@@ -1,0 +1,96 @@
+name: CI
+run-name: "${{ github.event_name == 'workflow_dispatch' && format('CI: {0}', github.ref_name) || '' }}"
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - release/*
+      - feature/*
+  pull_request: ~
+  workflow_dispatch:
+    inputs:
+      skip-lint:
+        description: "Skip linting"
+        required: false
+        default: false
+        type: boolean
+      skip-tests:
+        description: "Skip tests"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read # Read-only access
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.12"
+  TARGET_PYTHON_VERSIONS: '["3.10", "3.11", "3.12"]'
+
+jobs:
+  #----------------------------------------------
+  # Collect information
+  prepare:
+    name: Prepare
+    outputs:
+      target_python_versions: ${{ steps.versions.outputs.target_python_versions }}
+      default_python_version: ${{ steps.versions.outputs.default_python_version }}
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      # Send to Github Actions
+      - name: Export Python versions
+        id: versions
+        run: |
+          echo "target_python_versions=${TARGET_PYTHON_VERSIONS}" >> "$GITHUB_OUTPUT"
+          echo "default_python_version=${DEFAULT_PYTHON_VERSION}" >> "$GITHUB_OUTPUT"
+
+  #----------------------------------------------
+  # Lint
+  lint:
+    name: Lint
+    needs: prepare
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.inputs.skip-lint }}
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Linting the code
+      - name: Lint
+        uses: ./.github/workflows/python-lint
+        with:
+          python-version: ${{ needs.prepare.outputs.default_python_version }}
+
+  #----------------------------------------------
+  # Test
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    needs: [prepare, lint]
+    runs-on: "ubuntu-latest"
+    # Not skipped when lint is skipped by the user, only when it has failed.
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.lint.result != 'failure' && needs.lint.result != 'cancelled' && !github.event.inputs.skip-tests }}
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ${{ fromJSON(needs.prepare.outputs.target_python_versions) }}
+    steps:
+      #----------------------------------------------
+      #  Check-out repo
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      #----------------------------------------------
+      # Testing the code
+      - name: Test
+        uses: ./.github/workflows/python-test
+        with:
+          python-version: ${{ matrix.python-version }}
+        env:
+          VEOLIAIDF_USERNAME: ${{ secrets.VEOLIAIDF_USERNAME }}
+          VEOLIAIDF_PASSWORD: ${{ secrets.VEOLIAIDF_PASSWORD }}
