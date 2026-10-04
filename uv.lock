@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10"
 
 [[package]]
@@ -403,7 +403,7 @@ wheels = [
 
 [[package]]
 name = "pyveoliaidf"
-version = "0.4.5"
+version = "0.4.6a1"
 source = { editable = "." }
 dependencies = [
     { name = "openpyxl" },

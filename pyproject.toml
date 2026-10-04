@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyveoliaidf"
-version = "0.4.5"
+version = "0.4.6a1"
 description = "Retrieve water consumption from Veolia Ile-de-France web site (French Water Company)"
 readme = "README.md"
 license = "MIT"

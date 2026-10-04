@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6a1] - 2026-10-04
+
 ### Added
 - The client logs how many records it retrieved, and the period they cover.
 
@@ -124,6 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add LoginError exception raised when PyVeoliaIDF is unable to sign in the Veolia Web site with the given username/password.
 - Add timestamp property that contains date/time when the data has been retrieved.
 
+[Unreleased]: https://github.com/ssenart/PyVeoliaIDF/compare/0.4.6a1...HEAD
+[0.4.6a1]: https://github.com/ssenart/PyVeoliaIDF/compare/0.4.5...0.4.6a1
 [0.1.12]: https://github.com/ssenart/PyVeoliaIDF/compare/0.1.11...0.1.12
 [0.1.11]: https://github.com/ssenart/PyVeoliaIDF/compare/0.1.10...0.1.11
 [0.1.10]: https://github.com/ssenart/PyVeoliaIDF/compare/0.1.9...0.1.10
