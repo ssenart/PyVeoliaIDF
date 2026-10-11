@@ -235,6 +235,7 @@ class AuraClient:
         # Counts the logins, so that concurrent calls that see the session end log in once between them.
         self._login_count = 0
         self._lock = asyncio.Lock()
+        self._session_lock = asyncio.Lock()
 
     # ------------------------------------------------------
     def __repr__(self) -> str:
@@ -345,7 +346,7 @@ class AuraClient:
 
     # ------------------------------------------------------
     async def _do_login(self) -> None:
-        session = self._ensure_session()
+        session = await self._ensure_session()
         login_page = await self._get(urljoin(self._config.base_url, LOGIN_PAGE))
         self._context = parse_context(login_page)
 
@@ -415,7 +416,7 @@ class AuraClient:
 
     # ------------------------------------------------------
     async def _request(self, method: str, url: str, data: dict[str, str] | None = None) -> str:
-        session = self._ensure_session()
+        session = await self._ensure_session()
         timeout = aiohttp.ClientTimeout(sock_connect=self._config.connect_timeout, sock_read=self._config.read_timeout)
 
         async def operation() -> str:
@@ -453,13 +454,20 @@ class AuraClient:
             raise ServerError(f"The server could not be reached ({error}).") from error
 
     # ------------------------------------------------------
-    def _ensure_session(self) -> aiohttp.ClientSession:
-        if self._session is None:
-            connector = aiohttp.TCPConnector(ssl=build_ssl_context())
-            self._session = aiohttp.ClientSession(
-                connector=connector,
-                cookie_jar=aiohttp.CookieJar(),
-                headers={"User-Agent": self._config.user_agent},
-            )
+    async def _ensure_session(self) -> aiohttp.ClientSession:
+        """Returns the HTTP session, and makes it on the first call.
 
-        return self._session
+        The TLS context reads the certificate files, which blocks: it is built in a thread, so that an application with
+        an event loop that watches for blocking calls (Home Assistant does) is not slowed down or warned.
+        """
+
+        async with self._session_lock:
+            if self._session is None:
+                ssl_context = await asyncio.to_thread(build_ssl_context)
+                self._session = aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=ssl_context),
+                    cookie_jar=aiohttp.CookieJar(),
+                    headers={"User-Agent": self._config.user_agent},
+                )
+
+            return self._session

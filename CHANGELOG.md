@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The TLS context is built in a worker thread. It reads the certificate files, which blocked the event loop: Home Assistant logged four `Detected blocking call` warnings when the integration started.
+
 ## [0.5.0a1] - 2026-10-11
 
 ### Changed

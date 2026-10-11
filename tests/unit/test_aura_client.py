@@ -1,6 +1,8 @@
 import asyncio
 import logging
+import threading
 from collections.abc import AsyncIterator
+from typing import Any
 
 import aiohttp
 import pytest
@@ -17,6 +19,7 @@ from pyveoliaidf.errors import (
     SessionExpiredError,
     UnexpectedResponseError,
 )
+from pyveoliaidf.tls import build_ssl_context
 from tests.unit.fake_site import FakeSite
 from tests.unit.helpers import apex_body, aura_body, event, redirect_event
 
@@ -325,6 +328,36 @@ class TestSession:
 
         assert session is not None
         assert session.closed
+
+    async def test_the_tls_context_is_built_off_the_event_loop(
+        self, site: FakeSite, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        # Reading the certificate files blocks: an application that watches its event loop (Home Assistant) warns about it.
+        threads: list[int] = []
+        real_build = build_ssl_context
+
+        def spy() -> Any:
+            threads.append(threading.get_ident())
+            return real_build()
+
+        monkeypatch.setattr("pyveoliaidf.aura.build_ssl_context", spy)
+        aura = AuraClient(USERNAME, PASSWORD, config_for(site))
+        try:
+            await aura.login()
+        finally:
+            await aura.close()
+
+        assert threads
+        assert threading.get_ident() not in threads
+
+    async def test_concurrent_first_calls_make_one_session(self, site: FakeSite) -> None:
+        aura = AuraClient(USERNAME, PASSWORD, config_for(site))
+        try:
+            sessions = await asyncio.gather(*(aura._ensure_session() for _ in range(5)))
+
+            assert len({id(session) for session in sessions}) == 1
+        finally:
+            await aura.close()
 
     async def test_close_twice(self, logged_in: AuraClient) -> None:
         await logged_in.close()
