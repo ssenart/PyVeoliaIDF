@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.12"
+  DEFAULT_PYTHON_VERSION: "3.14"
 
 jobs:
   #----------------------------------------------
@@ -201,11 +201,13 @@ jobs:
 
       #----------------------------------------------
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       #----------------------------------------------
-      # Set the version in pyproject.toml (the single source of truth) and re-lock, so uv.lock stays in sync
-      - name: Bump version
+      # Bump the version in pyproject.toml, and in the project entry of uv.lock
+      - name: Bump version files
         run: |
           uv version "$VERSION" --no-sync
 
@@ -262,10 +264,8 @@ jobs:
           EOF
 
       #----------------------------------------------
-      # Build the sdist and the wheel into dist/
       - name: Build package
-        run: |
-          uv build
+        run: uv build
 
       #----------------------------------------------
       # Publish to PyPI or TestPyPI, depending on the branch
