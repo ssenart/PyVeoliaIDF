@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0a2] - 2026-10-11
+
 ### Fixed
 - The TLS context is built in a worker thread. It reads the certificate files, which blocked the event loop: Home Assistant logged four `Detected blocking call` warnings when the integration started.
 
@@ -159,7 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add LoginError exception raised when PyVeoliaIDF is unable to sign in the Veolia Web site with the given username/password.
 - Add timestamp property that contains date/time when the data has been retrieved.
 
-[Unreleased]: https://github.com/ssenart/pyveoliaidf/compare/0.5.0a1...HEAD
+[Unreleased]: https://github.com/ssenart/pyveoliaidf/compare/0.5.0a2...HEAD
+[0.5.0a2]: https://github.com/ssenart/pyveoliaidf/compare/0.5.0a1...0.5.0a2
 [0.5.0a1]: https://github.com/ssenart/pyveoliaidf/compare/0.4.6a1...0.5.0a1
 [0.4.6a1]: https://github.com/ssenart/PyVeoliaIDF/compare/0.4.5...0.4.6a1
 [0.1.12]: https://github.com/ssenart/PyVeoliaIDF/compare/0.1.11...0.1.12
