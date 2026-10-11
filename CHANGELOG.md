@@ -8,24 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Breaking:** the library no longer drives a browser. It calls the Salesforce Aura backend of the customer area over HTTPS, so Firefox, geckodriver and Selenium are no longer needed.
-- **Breaking:** the client is asynchronous: `await client.update()`, `await client.load_since(days)`, and `async with Client(...) as client`. The command-line tool is unchanged apart from its options.
-- The volumes of `data()` are integers (liters), not text. The keys are the same.
-- The code is split into a transport (`aura.py`), the Veolia API (`api_client.py`, `veolia_models.py`) and the public client (`client.py`, `model.py`).
-- The package is under `src/pyveoliaidf`.
+- **Breaking:** the client is asynchronous and gives typed models, and its API follows what the Veolia backend offers: `await client.history(...)` returns a `ConsumptionHistory` of `Reading`s, `await client.contracts()` returns `Contract`s with their meters. `update()`, `data()`, `load_since()`, the dict form, `PropertyNameEnum` and the old Selenium arguments of `Client` are removed.
+- **Breaking:** volumes and indexes are `Decimal` cubic meters, as the site sends them (`reading.liters` and `reading.cost_eur` are derived), instead of text liters.
+- **Breaking:** the command line has new options (`--step`, `--start`, `--end`, `--contract`, `--meter`, `--contracts`) and prints the history as JSON. `-w`, `-s` and `-t` are removed. The credentials come from `-u`/`-p`, then `VEOLIAIDF_USERNAME`/`VEOLIAIDF_PASSWORD`, then a prompt.
+- The package is under `src/pyveoliaidf`, in layers: a transport (`aura.py`), the Veolia API (`api_client.py`, `veolia_models.py`), and the public client (`client.py`, `convert.py`, `model.py`).
 - The code is formatted with `ruff format` and typed with `mypy --strict`, tests included.
 - CI is aligned with PyGazpar: lint (ruff format, ruff check, mypy) and tests run inline in `ci.yaml` on Python 3.10 to 3.14 (default 3.14), with `setup-uv` caching and `--locked`. The `python-lint` and `python-test` composite actions are removed, Firefox is no longer installed, and the live tests run once per CI run when the `VEOLIAIDF_*` secrets are set.
 
 ### Added
-- `Client.load_since()` and `Client.load_date_range()` return `DailyReading` models; `Client.get_contract_ids()` lists the contracts, and `contract_id=` selects one.
-- `build_ssl_context()` is exported, for callers that give their own HTTP session: it trusts the intermediate certificate that the site leaves out.
+- Daily, weekly and monthly histories (`Step`), and a daily range of any length: the site refuses about 100 days or more, so the client reads a longer range in windows of `ClientConfig.max_window_days` (90) and merges them. The previous default of 365 days could not work.
+- Everything the backend returns: the estimated flags, the leak-flow data, the meter index readings (`meter_readings`), the average price of water and the cost of each reading, the summary (`minimum`, `maximum`, `average_m3`, `total_cost_eur`), and the contracts with their meters, site address, balance, customer and payer.
+- `reading.day`, the day that the website shows, and `reading.meter_changed`, true where the index goes down (a meter replacement).
+- Several contracts and meters: `contract_number=` and `meter_number=` select them, and `UnknownMeterError` reports an unknown meter. The site makes its identifiers and tokens anew at each call, so a contract is selected by its number, which is stable (`Contract.id` and the meter tokens are opaque and must not be stored).
+- `VeoliaApiClient` and `AuraClient` are exported, for callers that need the lower layers. `build_ssl_context()` is exported, for callers that give their own HTTP session: it trusts the intermediate certificate that the site leaves out.
 - A typed error hierarchy rooted at `PyVeoliaIDFError`, with `UnexpectedResponseError` naming the field that changed.
 - Retries with backoff, a re-login when the session ends (once for concurrent calls), and a bundled intermediate certificate for the site.
 - The runtime dependencies have loose lower bounds (`aiohttp>=3.10`, `certifi>=2023.7.22`, `pydantic>=2.10`), so the library installs next to Home Assistant, which pins its own versions.
-- Offline unit tests (95% coverage gate with `--cov`, property-based tests with `hypothesis`) and opt-in live tests (`pytest -m integration`).
+- Offline unit tests (95% coverage gate with `--cov`, property-based tests with `hypothesis`) and opt-in live tests (`pytest -m integration`) that also check what the site does: the range limit, the windowing, and what a weekly reading covers.
+- `--version` and `-v/--verbose` (debug log to the standard error) on the command line, a GitHub bug report form, and a "Reporting an issue" section in the README that says what to include and how to collect it safely.
 - Dependabot for the Python dependencies and the GitHub Actions.
 
-### Deprecated
-- The old positional arguments `firefox_webdriver_executable`, `firefox_binary_location`, `wait_time` and `tmp_directory` of `Client` are accepted and ignored, with a `DeprecationWarning`.
+### Fixed
+- The 365-day default of the command line could not work against the site, which refuses about 100 days or more.
 
 ### Removed
 - `-w/--webdriver`, `-s/--wait_time` and `-t/--tmpdir` of the command-line tool, and the `selenium` and `openpyxl` dependencies.

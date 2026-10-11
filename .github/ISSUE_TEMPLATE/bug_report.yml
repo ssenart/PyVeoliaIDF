@@ -1,0 +1,78 @@
+name: Bug report
+description: Something does not work, or the site seems to have changed
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting. The more precise you are, the faster it gets fixed.
+
+        **Never paste your password, tokens, cookies, contract or meter numbers, names, addresses, mail or phone.** Replace them with `XXX`. See "Reporting an issue" in the README for how to collect the information safely.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: One or two sentences. Did it ever work? If so, since when did it stop?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The command line, or the smallest code that shows the problem. Remove your credentials.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: The error
+      description: The complete error message and traceback.
+      render: text
+  - type: textarea
+    id: log
+    attributes:
+      label: Debug log
+      description: The log with `pyveoliaidf -v ...` (or `logging.getLogger("pyveoliaidf").setLevel(logging.DEBUG)`), from the start of the run. Check that it holds none of your personal data before you paste it.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The output of `pyveoliaidf --version` (or `pip show pyveoliaidf`), and the version of the Home Assistant component if you use it.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Python, operating system, and how it is installed
+      description: For example "Python 3.12, Debian 12, pip in a venv", or "Home Assistant OS 2026.9, HACS".
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Does the Veolia website itself work in your browser?
+      options:
+        - "Yes, I can log in and see my consumption"
+        - "No, the website has a problem too"
+        - "I did not check"
+    validations:
+      required: true
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      options:
+        - Always
+        - Sometimes
+        - Once
+  - type: input
+    id: account
+    attributes:
+      label: Account shape
+      description: "Only the shape, never the numbers: for example \"1 contract, 1 meter\", \"2 contracts\"."
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
