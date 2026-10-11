@@ -1,122 +1,98 @@
 # PyVeoliaIDF
-PyVeoliaIDF is a Python library for getting water consumption from Veolia French provider.
+PyVeoliaIDF is a Python library for getting the water consumption from the Veolia Ile-de-France customer area (L'eau d'Île-de-France / SEDIF).
 
-Their water meter are wireless and transmit the consumption once per day.
+Their water meters are wireless and transmit the consumption once per day. The consumption is available in the customer area (https://connexion.leaudiledefrance.fr), and PyVeoliaIDF reads it from there and gives it as Python objects.
 
-All consumption data is available on the client account at Veolia Web Site (https://espace-client.vedif.eau.veolia.fr).
-
-PyVeoliaIDF automatically go through the Web Site and download the consumption data CSV file, and make it available in a Python structure (list of dictionaries).
+> **Unofficial.** Veolia offers no public API. PyVeoliaIDF calls the same backend that the customer area web pages call, so a change on their side may break it. See [Limitation](#limitation).
 
 ## Installation
-
-### Requirements
-PyVeoliaIDF is working with Selenium Python library to automate navigation through Veolia Web site. Selenium requires a WebDriver that acts as gateway between automatic actions from PyVeoliaIDF and a native browser already installed on the system.
-
-PyVeoliaIDF has been developped and tested with Firefox browser (version 68.8) and its corresponding Web Driver geckodriver (version 0.24).
-
-#### Firefox browser installation
-Follow instructions [here](https://www.mozilla.org/fr/firefox/new)
-
-#### Firefox Web Driver (geckodriver)
-Nothing to install: Selenium Manager (included with Selenium) finds or downloads the geckodriver matching your system. To use a specific geckodriver, pass its path with `-w` on the command line, or as `firefox_webdriver_executable` to `Client`. Releases are listed [here](https://github.com/mozilla/geckodriver/releases).
-
-### Create your virtual environment
-```bash
-$ pip install virtualenv
-
-$ cd /path/to/my_project_folder/
-
-$ virtualenv venv
-```
-
-### PyVeoliaIDF installation
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install PyVeoliaIDF.
+PyVeoliaIDF needs Python 3.10 or newer. It makes plain HTTPS calls: no browser and no web driver are needed.
 
 ```bash
 pip install pyveoliaidf
 ```
 
-You can also download the source code and install it manually.
-
-```bash
-cd /path/to/pyveoliaidf/
-pip install .
-```
-
 ### Development environment
-The project is managed with [uv](https://docs.astral.sh/uv/). It creates the virtual environment, installs the dependencies and runs the tests from the locked versions in `uv.lock`.
+The project is managed with [uv](https://docs.astral.sh/uv/).
 
 ```bash
 cd /path/to/pyveoliaidf/
 uv sync
-uv run pytest tests
+uv run pytest --cov                  # the unit tests: offline, with the 95% coverage gate
+uv run pytest -m integration         # the live tests: they need credentials (see below)
+uv run ruff check . && uv run mypy .
 ```
+
+The live tests log in to the real site and only read. Put your credentials in a `.env` file (copy `.env.example` to `.env`, which git ignores) or export `VEOLIAIDF_USERNAME` and `VEOLIAIDF_PASSWORD`. Without them, the live tests are skipped.
 
 ## Usage
 
 ### Command line
 
 ```bash
-$ pyveoliaidf -u 'your login' -p 'your password' -w 'path/to/Selenium Web Driver' -s 30 -t 'temporary directory where to store CSV file (ex: /tmp)'
+$ pyveoliaidf -u 'your login' -p 'your password' -d 365
 ```
 
 ### Library
+The client is asynchronous.
 
 ```python
-import pyveoliaidf
+import asyncio
 
-client = pyveoliaidf.Client('your login',
-                         'your password',
-                         365,
-                         'path/to/Selenium Web Driver',
-                         30,
-                         'temporary directory where to store CSV file (ex: /tmp)')
+from pyveoliaidf import Client
 
-client.update()
 
-data = client.data()
+async def main():
+    async with Client('your login', 'your password', last_n_days=365) as client:
+        readings = await client.load_since(30)      # a list of DailyReading, oldest first
+        for reading in readings:
+            print(reading.time, reading.daily_liter)
+
+        await client.update()                       # the same, as dicts:
+        print(client.data())                        # [{"time": ..., "total_liter": ..., ...}, ...]
+
+
+asyncio.run(main())
 ```
+
+By default the client creates its own HTTP session, which keeps the login cookies and trusts the intermediate certificate that the Veolia site leaves out of its chain. `Client` also accepts an `aiohttp.ClientSession` (`session=`), which then must do both: build it with `aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=pyveoliaidf.build_ssl_context()))`. Home Assistant's shared session does neither, so let the client create its own. A session that is given is never closed by the client.
 
 ### Output
 
 ```json
-data =>
 [
   {
-    "time": "2019-07-14 19:00:00",
-    "total_liter": "506669",
-    "daily_liter": "530",
-    "type": "Estim\u00c3\u00a9",
-    "timestamp": "2019-08-31T16:55:01.236779"
+    "time": "2026-10-05 21:00:00",
+    "total_liter": 143868,
+    "daily_liter": 530,
+    "type": "Estimé",
+    "timestamp": "2026-10-11T12:27:29.330899"
   },
   {
-    "time": "2019-07-15 19:00:00",
-    "total_liter": "507523",
-    "daily_liter": "854",
-    "type": "Mesur\u00c3\u00a9",
-    "timestamp": "2019-08-31T16:55:01.236779"
-  },
-  {
-    "time": "2019-07-16 19:00:00",
-    "total_liter": "508314",
-    "daily_liter": "791",
-    "type": "Mesur\u00c3\u00a9",
-    "timestamp": "2019-08-31T16:55:01.236779"
+    "time": "2026-10-06 21:00:00",
+    "total_liter": 144242,
+    "daily_liter": 374,
+    "type": "Mesuré",
+    "timestamp": "2026-10-11T12:27:29.330899"
   }
 ]
 ```
 
+The volumes are liters (integers), and `type` is `Mesuré` (measured) or `Estimé` (estimated).
+
+### Errors
+Every error derives from `PyVeoliaIDFError`: `LoginError` (wrong credentials, or the login changed), `SessionExpiredError`, `RateLimitError`, `ServerError`, `UnexpectedResponseError` (the site has changed: the message names the field), `NotLoggedInError` and `UnknownContractError`.
+
+## Design
+The library has two layers, so that a change on the Veolia side stays in the lower one. See [docs/architecture.md](docs/architecture.md).
+
 ## Limitation
-PyVeoliaIDF relies on how Veolia Web Site is built. It goes through each Web pages and automatically fill forms, click buttons using their internal identifiers.
-
-Any change in the Web site structure or identifier naming may break this library.
-
-We expect in close Future that Veolia makes available a standard API from which we can get safely their data.
+PyVeoliaIDF relies on how the Veolia customer area is built. It calls the backend methods of the pages, and any change there may break this library. The library validates every answer and raises an `UnexpectedResponseError` that names what changed, rather than returning wrong data.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-Please make sure to update tests as appropriate.
+Please make sure to update tests as appropriate: the unit tests must stay offline, and what needs the real site belongs to the integration tests.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

@@ -6,6 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Breaking:** the library no longer drives a browser. It calls the Salesforce Aura backend of the customer area over HTTPS, so Firefox, geckodriver and Selenium are no longer needed.
+- **Breaking:** the client is asynchronous: `await client.update()`, `await client.load_since(days)`, and `async with Client(...) as client`. The command-line tool is unchanged apart from its options.
+- The volumes of `data()` are integers (liters), not text. The keys are the same.
+- The code is split into a transport (`aura.py`), the Veolia API (`api_client.py`, `veolia_models.py`) and the public client (`client.py`, `model.py`).
+- The package is under `src/pyveoliaidf`.
+- The code is formatted with `ruff format` and typed with `mypy --strict`, tests included.
+- CI is aligned with PyGazpar: lint (ruff format, ruff check, mypy) and tests run inline in `ci.yaml` on Python 3.10 to 3.14 (default 3.14), with `setup-uv` caching and `--locked`. The `python-lint` and `python-test` composite actions are removed, Firefox is no longer installed, and the live tests run once per CI run when the `VEOLIAIDF_*` secrets are set.
+
+### Added
+- `Client.load_since()` and `Client.load_date_range()` return `DailyReading` models; `Client.get_contract_ids()` lists the contracts, and `contract_id=` selects one.
+- `build_ssl_context()` is exported, for callers that give their own HTTP session: it trusts the intermediate certificate that the site leaves out.
+- A typed error hierarchy rooted at `PyVeoliaIDFError`, with `UnexpectedResponseError` naming the field that changed.
+- Retries with backoff, a re-login when the session ends (once for concurrent calls), and a bundled intermediate certificate for the site.
+- The runtime dependencies have loose lower bounds (`aiohttp>=3.10`, `certifi>=2023.7.22`, `pydantic>=2.10`), so the library installs next to Home Assistant, which pins its own versions.
+- Offline unit tests (95% coverage gate with `--cov`, property-based tests with `hypothesis`) and opt-in live tests (`pytest -m integration`).
+- Dependabot for the Python dependencies and the GitHub Actions.
+
+### Deprecated
+- The old positional arguments `firefox_webdriver_executable`, `firefox_binary_location`, `wait_time` and `tmp_directory` of `Client` are accepted and ignored, with a `DeprecationWarning`.
+
+### Removed
+- `-w/--webdriver`, `-s/--wait_time` and `-t/--tmpdir` of the command-line tool, and the `selenium` and `openpyxl` dependencies.
+
 ## [0.4.6a1] - 2026-10-04
 
 ### Added
