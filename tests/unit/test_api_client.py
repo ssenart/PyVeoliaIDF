@@ -5,6 +5,7 @@ import pytest
 
 from pyveoliaidf.api_client import VeoliaApiClient
 from pyveoliaidf.errors import ServerError, UnexpectedResponseError
+from pyveoliaidf.model import Step
 from tests.unit.fakes import FakeTransport
 from tests.unit.helpers import consumption, contract_details, record
 
@@ -59,35 +60,43 @@ class TestGetContractDetails:
     async def test_names_the_fields_in_error_but_not_their_values(self) -> None:
         data = contract_details()
         data["compteInfo"] = []
-        data["contratClient"] = {"LastName": "Doe"}
+        data["contratClient"] = {"LastName": "Doe", "VerrouillageFiche": "maybe"}
         api = VeoliaApiClient(FakeTransport({DETAILS: data}))
 
         with pytest.raises(UnexpectedResponseError, match="compteInfo") as error:
             await api.get_contract_details("C-1")
 
         assert "Doe" not in str(error.value)
+        assert "maybe" not in str(error.value)
 
 
-class TestGetDailyConsumption:
-    async def test_sends_the_meter_tokens_and_the_dates(self) -> None:
+class TestGetConsumption:
+    async def meter(self, transport: FakeTransport) -> Any:
+        details = await VeoliaApiClient(transport).get_contract_details("C-1")
+
+        return details.meters[0]
+
+    @pytest.mark.parametrize(("step", "name"), [(Step.DAY, "JOURNEE"), (Step.WEEK, "SEMAINE"), (Step.MONTH, "MOIS")])
+    async def test_sends_the_meter_tokens_the_step_and_the_dates(self, step: Step, name: str) -> None:
         transport = FakeTransport(
             {DETAILS: contract_details(), HISTORY: consumption([record("2026-10-05", "1", "0.5")])}
         )
         api = VeoliaApiClient(transport)
-        details = await api.get_contract_details("C-1")
 
-        response = await api.get_daily_consumption("C-1", details.meters[0], date(2026, 10, 1), date(2026, 10, 6))
+        response = await api.get_consumption(
+            "C-1", await self.meter(transport), step, date(2026, 10, 1), date(2026, 10, 6)
+        )
 
         assert len(response.data.records) == 1
         classname, method, params, page_uri = transport.calls[-1]
         assert (classname, method) == HISTORY
         assert params == {
             "contractId": "C-1",
-            "TYPE_PAS": "JOURNEE",
+            "TYPE_PAS": name,
             "DATE_DEBUT": "2026-10-01",
             "DATE_FIN": "2026-10-06",
-            "NUMERO_COMPTEUR": "meter-token",
-            "ID_PDS": "point-token",
+            "NUMERO_COMPTEUR": "meter-token-X1",
+            "ID_PDS": "point-token-X1",
         }
         assert page_uri == "/espace-particuliers/s/historique"
 
@@ -96,15 +105,17 @@ class TestGetDailyConsumption:
             {DETAILS: contract_details(), HISTORY: {"data": {"CONSOMMATION": [{"VALEUR_INDEX": "x"}]}}}
         )
         api = VeoliaApiClient(transport)
-        details = await api.get_contract_details("C-1")
 
         with pytest.raises(UnexpectedResponseError, match="consumption history"):
-            await api.get_daily_consumption("C-1", details.meters[0], date(2026, 10, 1), date(2026, 10, 6))
+            await api.get_consumption(
+                "C-1", await self.meter(transport), Step.DAY, date(2026, 10, 1), date(2026, 10, 6)
+            )
 
     async def test_transport_errors_pass_through(self) -> None:
         transport = FakeTransport({DETAILS: contract_details(), HISTORY: ServerError("down")})
         api = VeoliaApiClient(transport)
-        details = await api.get_contract_details("C-1")
 
         with pytest.raises(ServerError, match="down"):
-            await api.get_daily_consumption("C-1", details.meters[0], date(2026, 10, 1), date(2026, 10, 6))
+            await api.get_consumption(
+                "C-1", await self.meter(transport), Step.DAY, date(2026, 10, 1), date(2026, 10, 6)
+            )

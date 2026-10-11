@@ -71,20 +71,66 @@ def event(name: str) -> dict[str, Any]:
     return {"descriptor": f"markup://aura:{name}", "attributes": {"values": {}}}
 
 
-def contract_details(contract_id: str = "CONTRACT-1") -> dict[str, Any]:
-    """The details of a contract. The personal fields are fake, and the library must drop them."""
-
-    customer = {"FirstName": "Jane", "LastName": "Doe", "Email": "jane@example.invalid", "MobilePhone": "0600000000"}
+def party(first_name: str = "Jane") -> dict[str, Any]:
+    """A customer or a payer. Every value is fake and recognizable, so that the tests can look for it in repr and logs."""
 
     return {
-        "compteInfo": [{"ELEMA": "point-token", "ELEMB": "meter-token", "ID_PDS": "1234567890", "NUM_COMPTEUR": "X1"}],
-        "contrat": {"Id": contract_id, "Name": "1234567"},
-        "contratClient": customer,
-        "payeurClient": customer,
+        "AssujettiTVA": False,
+        "BillingCity": "Paris",
+        "BillingPostalCode": "75001",
+        "BillingStreet": "1 rue Fictive",
+        "ContratClientId": "CC-1",
+        "Email": "jane@example.invalid",
+        "FirstName": first_name,
+        "GC": False,
+        "Id": "PARTY-1",
+        "LastName": "Doe",
+        "MobilePhone": "0600000000",
+        "Name": "Jane Doe",
+        "Salutation": "Mme",
+        "VCRM_ID": "CRM-1",
+        "VerrouillageFiche": False,
     }
 
 
-def record(day: str, index: str, consumption: str, estimated: bool = False) -> dict[str, Any]:
+def contract_details(
+    contract_id: str = "CONTRACT-1", meters: tuple[str, ...] = ("X1",), number: str = "1234567", salt: str = ""
+) -> dict[str, Any]:
+    """The details of a contract, with every field that the site sends.
+
+    The salt makes the tokens of the meters differ from one call to the next, as the real site's do.
+    """
+
+    return {
+        "compteInfo": [
+            {
+                "ELEMA": f"point-token-{meter}{salt}",
+                "ELEMB": f"meter-token-{meter}{salt}",
+                "ID_PDS": "1234567890",
+                "NUM_COMPTEUR": meter,
+            }
+            for meter in meters
+        ],
+        "compteParticulier": True,
+        "contrat": {
+            "AutoriteOrganisatrice": "SEDIF",
+            "DateSortieEPT": "2024-01-01",
+            "Id": contract_id,
+            "Name": number,
+            "SITE_CP": "75001",
+            "SITE_Commune": "Paris",
+            "SITE_Rue": "1 rue Fictive",
+            "Statut": "Actif",
+        },
+        "contratClient": party(),
+        "multipleContrats": False,
+        "payeurClient": party("Payer"),
+        "segmentationPrimaire": "PARTICULIER",
+        "solde": 12.5,
+    }
+
+
+def record(day: str, index: str, consumption: str, estimated: bool = False, **extra: Any) -> dict[str, Any]:
     return {
         "CONSOMMATION": consumption,
         "DATE_INDEX": f"{day} 21:00:00",
@@ -92,8 +138,30 @@ def record(day: str, index: str, consumption: str, estimated: bool = False) -> d
         "FLAG_ESTIMATION": estimated,
         "FLAG_ESTIMATION_INDEX": True,
         "VALEUR_INDEX": index,
+        **extra,
     }
 
 
-def consumption(records: list[dict[str, Any]]) -> dict[str, Any]:
-    return {"data": {"CONSOMMATION": records, "ID_PDS": "1234567890"}, "prixMoyenEau": 4.9171}
+def consumption(records: list[dict[str, Any]], **top: Any) -> dict[str, Any]:
+    """The answer of the consumption method: the records, and everything the site says around them."""
+
+    answer: dict[str, Any] = {
+        "data": {
+            "CONSOMMATION": records,
+            "CONSOMMATION_MAX": "2.921",
+            "CONSOMMATION_MOYENNE": "0.92921",
+            "DATE_CONSOMMATION_MAX": "2026-09-05",
+            "DATE_DEBUT": "2026-07-12 02:00:00",
+            "DATE_FIN": "2026-10-10 02:00:00",
+            "ID_PDS": "1234567890",
+            "NUMERO_COMPTEUR": "X1",
+        },
+        "prixMoyenEau": 4.9171,
+        "seuilDebitPermanet": 0.0,
+        "showDebitPermanent": False,
+        "canCompareMonth": True,
+        "indexMesure": [f"{item['VALEUR_INDEX']};{item['DATE_INDEX']}" for item in records],
+    }
+    answer.update(top)
+
+    return answer
