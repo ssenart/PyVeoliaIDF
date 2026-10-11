@@ -1,9 +1,10 @@
 import importlib.metadata
 import logging
 
+from pyveoliaidf.api_client import VeoliaApiClient
+from pyveoliaidf.aura import AuraClient
 from pyveoliaidf.client import Client
 from pyveoliaidf.config import ClientConfig
-from pyveoliaidf.enum import PropertyNameEnum
 from pyveoliaidf.errors import (
     LoginError,
     NotLoggedInError,
@@ -13,26 +14,45 @@ from pyveoliaidf.errors import (
     SessionExpiredError,
     UnexpectedResponseError,
     UnknownContractError,
+    UnknownMeterError,
 )
-from pyveoliaidf.model import DailyReading
+from pyveoliaidf.model import (
+    ConsumptionHistory,
+    Contract,
+    Meter,
+    MeterIndex,
+    Party,
+    Reading,
+    Site,
+    Step,
+)
 from pyveoliaidf.tls import build_ssl_context
 
 # The version is read from the installed package metadata, which comes from pyproject.toml.
 __version__ = importlib.metadata.version("pyveoliaidf")
 
 __all__ = [
+    "AuraClient",
     "Client",
     "ClientConfig",
-    "DailyReading",
+    "ConsumptionHistory",
+    "Contract",
     "LoginError",
+    "Meter",
+    "MeterIndex",
     "NotLoggedInError",
-    "PropertyNameEnum",
+    "Party",
     "PyVeoliaIDFError",
     "RateLimitError",
+    "Reading",
     "ServerError",
     "SessionExpiredError",
+    "Site",
+    "Step",
     "UnexpectedResponseError",
     "UnknownContractError",
+    "UnknownMeterError",
+    "VeoliaApiClient",
     "__version__",
     "build_ssl_context",
 ]

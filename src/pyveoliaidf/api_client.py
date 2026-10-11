@@ -12,6 +12,7 @@ from pydantic import BaseModel, ValidationError
 
 from pyveoliaidf.aura import AuraTransport
 from pyveoliaidf.errors import UnexpectedResponseError
+from pyveoliaidf.model import Step
 from pyveoliaidf.veolia_models import VeoliaConsumptionResponse, VeoliaContractDetails, VeoliaMeter
 
 CONTRACTS_CLASS = "LTN009_ICL_ContratsGroupements"
@@ -21,6 +22,9 @@ CONSUMPTION_CLASS = "LTN015_ICL_ContratConsoHisto"
 HISTORY_PAGE_URI = "/espace-particuliers/s/historique"
 
 DATE_FORMAT = "%Y-%m-%d"
+
+# The steps, as the consumption method names them.
+API_STEPS = {Step.DAY: "JOURNEE", Step.WEEK: "SEMAINE", Step.MONTH: "MOIS"}
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
@@ -43,8 +47,8 @@ class VeoliaApi(Protocol):
 
     async def get_contract_details(self, contract_id: str) -> VeoliaContractDetails: ...
 
-    async def get_daily_consumption(
-        self, contract_id: str, meter: VeoliaMeter, start_date: date, end_date: date
+    async def get_consumption(
+        self, contract_id: str, meter: VeoliaMeter, step: Step, start_date: date, end_date: date
     ) -> VeoliaConsumptionResponse: ...
 
 
@@ -104,16 +108,17 @@ class VeoliaApiClient:
         return validate(VeoliaContractDetails, value, "contract details")
 
     # ------------------------------------------------------
-    async def get_daily_consumption(
-        self, contract_id: str, meter: VeoliaMeter, start_date: date, end_date: date
+    async def get_consumption(
+        self, contract_id: str, meter: VeoliaMeter, step: Step, start_date: date, end_date: date
     ) -> VeoliaConsumptionResponse:
+        """Returns the consumption of a meter over a range. The site refuses a daily range of more than about 100 days."""
 
         value = await self._transport.call_apex(
             CONSUMPTION_CLASS,
             "getData",
             {
                 "contractId": contract_id,
-                "TYPE_PAS": "JOURNEE",
+                "TYPE_PAS": API_STEPS[step],
                 "DATE_DEBUT": start_date.strftime(DATE_FORMAT),
                 "DATE_FIN": end_date.strftime(DATE_FORMAT),
                 "NUMERO_COMPTEUR": meter.meter_token,

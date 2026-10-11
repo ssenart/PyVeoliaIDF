@@ -1,67 +1,42 @@
-"""The public client of PyVeoliaIDF: the upper layer, which gives the readings as models.
+"""The public client of PyVeoliaIDF: the upper layer, which gives contracts and consumption histories as models.
 
 It asks the lower layer (api_client.py) for the raw answers of the site and converts them to the model of model.py.
 """
 
 import logging
-import warnings
 from datetime import date, datetime, timedelta
-from decimal import ROUND_HALF_UP, Decimal
 from types import TracebackType
-from typing import Any
 
 import aiohttp
 
 from pyveoliaidf.api_client import VeoliaApi, VeoliaApiClient
 from pyveoliaidf.aura import AuraClient
 from pyveoliaidf.config import ClientConfig
-from pyveoliaidf.errors import LoginError, UnknownContractError  # noqa: F401
-from pyveoliaidf.model import ESTIMATED, MEASURED, DailyReading
-from pyveoliaidf.veolia_models import VeoliaConsumptionRecord
+from pyveoliaidf.convert import build_history, to_contract, to_meter, windows
+from pyveoliaidf.errors import UnknownContractError, UnknownMeterError
+from pyveoliaidf.model import ConsumptionHistory, Contract, Step
+from pyveoliaidf.veolia_models import VeoliaContractDetails, VeoliaMeter
 
 DEFAULT_LAST_N_DAYS = 365
-
-LITERS_PER_CUBIC_METER = Decimal(1000)
-
-# The arguments that the Selenium-based client took after last_n_days: they have no meaning any more.
-LEGACY_ARGUMENTS = ("firefox_webdriver_executable", "firefox_binary_location", "wait_time", "tmp_directory")
 
 Logger = logging.getLogger(__name__)
 
 
 # ------------------------------------------------------------------------------------------------------------
-def to_liters(cubic_meters: Decimal) -> int:
-    """Returns a volume in liters from a volume in cubic meters, rounded to the liter."""
-
-    return int((cubic_meters * LITERS_PER_CUBIC_METER).quantize(Decimal(1), rounding=ROUND_HALF_UP))
-
-
-# ------------------------------------------------------------------------------------------------------------
-def to_daily_reading(record: VeoliaConsumptionRecord, timestamp: str) -> DailyReading:
-    """Converts a raw consumption record to the reading that users get."""
-
-    return DailyReading(
-        time=record.date_index,
-        total_liter=to_liters(record.index_m3),
-        daily_liter=to_liters(record.consumption_m3),
-        type=ESTIMATED if record.estimated else MEASURED,
-        timestamp=timestamp,
-    )
-
-
-# ------------------------------------------------------------------------------------------------------------
 class Client:
-    """Reads the water consumption of a Veolia Ile-de-France account.
+    """Reads the contracts and the water consumption of a Veolia Ile-de-France account.
 
     The client logs in on its first call and keeps its session. Use it as an async context manager so that the session
     ends whatever happens:
 
         async with Client(username, password) as client:
-            await client.update()
-            print(client.data())
+            history = await client.history(last_n_days=30)
+            for reading in history.readings:
+                print(reading.day, reading.volume_m3)
 
-    The aiohttp session that is given must keep cookies and trust the certificates of the site (see AuraClient). The
-    client closes the sessions it created itself, never the one it was given.
+    Without a contract number or a meter number, the first contract and its first meter are read. The aiohttp session that is given must keep
+    cookies and trust the certificates of the site (see AuraClient). The client closes the sessions it created itself,
+    never the one it was given.
     """
 
     # ------------------------------------------------------
@@ -69,24 +44,17 @@ class Client:
         self,
         username: str,
         password: str,
-        last_n_days: int = DEFAULT_LAST_N_DAYS,
-        *legacy_arguments: Any,
-        contract_id: str | None = None,
+        *,
+        contract_number: str | None = None,
+        meter_number: str | None = None,
         config: ClientConfig | None = None,
         session: aiohttp.ClientSession | None = None,
         api: VeoliaApi | None = None,
     ):
-        if legacy_arguments:
-            warnings.warn(
-                f"The arguments {', '.join(LEGACY_ARGUMENTS)} are ignored: the client does not use a browser any more.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        self._api: VeoliaApi = api or VeoliaApiClient(AuraClient(username, password, config, session))
-        self._last_n_days = last_n_days
-        self._contract_id = contract_id
-        self._data: list[dict[str, Any]] = []
+        self._config = config or ClientConfig()
+        self._api: VeoliaApi = api or VeoliaApiClient(AuraClient(username, password, self._config, session))
+        self._contract_number = contract_number
+        self._meter_number = meter_number
 
     # ------------------------------------------------------
     async def __aenter__(self) -> "Client":
@@ -113,53 +81,50 @@ class Client:
         await self._api.close()
 
     # ------------------------------------------------------
-    def data(self) -> list[dict[str, Any]]:
-        """Returns the readings of the last update() as dicts, the form the Home Assistant integration reads."""
-
-        return self._data
-
-    # ------------------------------------------------------
-    async def get_contract_ids(self) -> list[str]:
-        await self._ensure_login()
-
-        return await self._api.list_contract_ids()
-
-    # ------------------------------------------------------
-    async def update(self) -> None:
-        """Loads the readings of the last N days, and keeps them for data()."""
-
-        readings = await self.load_since(self._last_n_days)
-        self._data = [reading.as_dict() for reading in readings]
-
-        if self._data:
-            Logger.info(
-                "Retrieved %d records from %s to %s", len(self._data), self._data[0]["time"], self._data[-1]["time"]
-            )
-        else:
-            Logger.warning("No records retrieved")
-
-    # ------------------------------------------------------
-    async def load_since(self, last_n_days: int = DEFAULT_LAST_N_DAYS) -> list[DailyReading]:
-        """Returns the daily readings of the last N days, oldest first."""
-
-        end_date = date.today()
-
-        return await self.load_date_range(end_date - timedelta(days=last_n_days), end_date)
-
-    # ------------------------------------------------------
-    async def load_date_range(self, start_date: date, end_date: date) -> list[DailyReading]:
-        """Returns the daily readings between two dates, oldest first."""
+    async def contracts(self) -> list[Contract]:
+        """Returns the active contracts of the account, with their meters."""
 
         await self._ensure_login()
 
-        contract_id = await self._resolve_contract_id()
-        details = await self._api.get_contract_details(contract_id)
-        response = await self._api.get_daily_consumption(contract_id, details.meters[0], start_date, end_date)
+        return [
+            to_contract(await self._api.get_contract_details(contract_id))
+            for contract_id in await self._api.list_contract_ids()
+        ]
 
-        timestamp = datetime.now().isoformat()
-        readings = [to_daily_reading(record, timestamp) for record in response.data.records]
+    # ------------------------------------------------------
+    async def history(
+        self,
+        *,
+        step: Step = Step.DAY,
+        start: date | None = None,
+        end: date | None = None,
+        last_n_days: int = DEFAULT_LAST_N_DAYS,
+        contract_number: str | None = None,
+        meter_number: str | None = None,
+    ) -> ConsumptionHistory:
+        """Returns the readings of a meter between two dates, oldest first.
 
-        return sorted(readings, key=lambda reading: reading.time)
+        The range ends at end (today by default) and starts at start, or last_n_days before the end. The site refuses a
+        daily history of more than about 100 days, so a longer one is read in windows (config.max_window_days) and
+        merged. A weekly or monthly history is read in one call, and the site rounds its range to whole periods.
+        """
+
+        await self._ensure_login()
+
+        end = end or date.today()
+        start = start or end - timedelta(days=last_n_days)
+        if start > end:
+            raise ValueError("The start of the range is after its end.")
+
+        contract_id, details = await self._resolve_contract(contract_number)
+        raw_meter = self._resolve_meter(details, meter_number)
+
+        ranges = windows(start, end, self._config.max_window_days) if step == Step.DAY else [(start, end)]
+        responses = [
+            await self._api.get_consumption(contract_id, raw_meter, step, first, last) for first, last in ranges
+        ]
+
+        return build_history(details.contract.number, to_meter(raw_meter), step, start, end, responses, datetime.now())
 
     # ------------------------------------------------------
     async def _ensure_login(self) -> None:
@@ -167,16 +132,37 @@ class Client:
             await self._api.login()
 
     # ------------------------------------------------------
-    async def _resolve_contract_id(self) -> str:
+    async def _resolve_contract(self, contract_number: str | None) -> tuple[str, VeoliaContractDetails]:
+        """Returns the identifier to call the site with, and the details of the contract.
+
+        The site makes the identifiers anew at each call, so a contract is found by its number, which is stable: the
+        details of each contract are read until one has it.
+        """
+
+        wanted = contract_number or self._contract_number
         contract_ids = await self._api.list_contract_ids()
 
-        if self._contract_id is not None:
-            if self._contract_id not in contract_ids:
-                raise UnknownContractError(self._contract_id)
+        if wanted is None:
+            if not contract_ids:
+                raise UnknownContractError("(none)")
 
-            return self._contract_id
+            return contract_ids[0], await self._api.get_contract_details(contract_ids[0])
 
-        if not contract_ids:
-            raise UnknownContractError("(none)")
+        for contract_id in contract_ids:
+            details = await self._api.get_contract_details(contract_id)
+            if details.contract.number == wanted:
+                return contract_id, details
 
-        return contract_ids[0]
+        raise UnknownContractError(wanted)
+
+    # ------------------------------------------------------
+    def _resolve_meter(self, details: VeoliaContractDetails, meter_number: str | None) -> VeoliaMeter:
+        wanted = meter_number or self._meter_number
+        if wanted is None:
+            return details.meters[0]
+
+        for meter in details.meters:
+            if meter.meter_number == wanted:
+                return meter
+
+        raise UnknownMeterError(wanted)

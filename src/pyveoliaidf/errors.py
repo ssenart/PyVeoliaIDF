@@ -47,9 +47,18 @@ class NotLoggedInError(PyVeoliaIDFError, ConnectionError):
 
 
 # ------------------------------------------------------------------------------------------------------------
-class UnknownContractError(PyVeoliaIDFError, LookupError):
-    """The contract identifier is not one of the contracts of the account."""
+class UnknownMeterError(PyVeoliaIDFError, LookupError):
+    """The meter number is not one of the meters of the contract."""
 
-    def __init__(self, contract_id: str):
-        super().__init__(f"The contract {contract_id} does not exist in this account.")
-        self.contract_id = contract_id
+    def __init__(self, meter_number: str):
+        super().__init__(f"The meter {meter_number} does not exist in this contract.")
+        self.meter_number = meter_number
+
+
+# ------------------------------------------------------------------------------------------------------------
+class UnknownContractError(PyVeoliaIDFError, LookupError):
+    """The contract number is not one of the contracts of the account."""
+
+    def __init__(self, contract_number: str):
+        super().__init__(f"The contract {contract_number} does not exist in this account.")
+        self.contract_number = contract_number

@@ -13,7 +13,8 @@ class ClientConfig:
     """The settings of the HTTP side of the clients.
 
     The timeouts are in seconds. A failed call is retried retry_count times at most, after a delay that starts at
-    retry_delay and doubles at each attempt, up to max_retry_delay.
+    retry_delay and doubles at each attempt, up to max_retry_delay. The site refuses a daily history of more than about
+    100 days, so a longer one is read in windows of max_window_days.
     """
 
     base_url: str = DEFAULT_BASE_URL
@@ -23,3 +24,4 @@ class ClientConfig:
     retry_count: int = 3
     retry_delay: float = 1.0
     max_retry_delay: float = 15.0
+    max_window_days: int = 90

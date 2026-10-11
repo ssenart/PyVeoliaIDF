@@ -73,7 +73,6 @@ ignore = ["E501"]
 [tool.coverage.run]
 source = ["pyveoliaidf"]
 branch = true
-omit = ["*/pyveoliaidf/__main__.py"]
 
 [tool.coverage.report]
 fail_under = 95
