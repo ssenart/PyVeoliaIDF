@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0a1] - 2026-10-11
+
 ### Changed
 - **Breaking:** the library no longer drives a browser. It calls the Salesforce Aura backend of the customer area over HTTPS, so Firefox, geckodriver and Selenium are no longer needed.
 - **Breaking:** the client is asynchronous and gives typed models, and its API follows what the Veolia backend offers: `await client.history(...)` returns a `ConsumptionHistory` of `Reading`s, `await client.contracts()` returns `Contract`s with their meters. `update()`, `data()`, `load_since()`, the dict form, `PropertyNameEnum` and the old Selenium arguments of `Client` are removed.
@@ -154,7 +156,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add LoginError exception raised when PyVeoliaIDF is unable to sign in the Veolia Web site with the given username/password.
 - Add timestamp property that contains date/time when the data has been retrieved.
 
-[Unreleased]: https://github.com/ssenart/PyVeoliaIDF/compare/0.4.6a1...HEAD
+[Unreleased]: https://github.com/ssenart/pyveoliaidf/compare/0.5.0a1...HEAD
+[0.5.0a1]: https://github.com/ssenart/pyveoliaidf/compare/0.4.6a1...0.5.0a1
 [0.4.6a1]: https://github.com/ssenart/PyVeoliaIDF/compare/0.4.5...0.4.6a1
 [0.1.12]: https://github.com/ssenart/PyVeoliaIDF/compare/0.1.11...0.1.12
 [0.1.11]: https://github.com/ssenart/PyVeoliaIDF/compare/0.1.10...0.1.11
