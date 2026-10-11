@@ -1,4 +1,4 @@
-"""The public client of PyVeoliaIDF: the upper layer, which gives contracts and consumption histories as models.
+"""The public client of pyveoliaidf: the upper layer, which gives contracts and consumption histories as models.
 
 It asks the lower layer (api_client.py) for the raw answers of the site and converts them to the model of model.py.
 """

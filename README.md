@@ -1,10 +1,10 @@
-# PyVeoliaIDF
+# pyveoliaidf
 
-PyVeoliaIDF is a Python library for reading your water consumption from the Veolia Ile-de-France customer area (L'eau d'Île-de-France / SEDIF).
+pyveoliaidf is a Python library for reading your water consumption from the Veolia Ile-de-France customer area (L'eau d'Île-de-France / SEDIF).
 
-Their water meters are wireless and transmit the consumption once per day. The consumption is available in the customer area (https://connexion.leaudiledefrance.fr), and PyVeoliaIDF reads it from there and gives it as typed Python objects: daily, weekly and monthly readings, the index of the meter, the estimated cost, and the contracts with their meters.
+Their water meters are wireless and transmit the consumption once per day. The consumption is available in the customer area (https://connexion.leaudiledefrance.fr), and pyveoliaidf reads it from there and gives it as typed Python objects: daily, weekly and monthly readings, the index of the meter, the estimated cost, and the contracts with their meters.
 
-> **Unofficial.** Veolia offers no public API. PyVeoliaIDF calls the same backend that the customer area web pages call, so a change on their side may break it. See [Limitations](#limitations).
+> **Unofficial.** Veolia offers no public API. pyveoliaidf calls the same backend that the customer area web pages call, so a change on their side may break it. See [Limitations](#limitations).
 
 **Contents**
 [Installation](#installation) ·
@@ -21,7 +21,7 @@ Their water meters are wireless and transmit the consumption once per day. The c
 [Contributing](#contributing)
 
 ## Installation
-PyVeoliaIDF needs Python 3.10 or newer. It makes plain HTTPS calls: no browser and no web driver are needed.
+pyveoliaidf needs Python 3.10 or newer. It makes plain HTTPS calls: no browser and no web driver are needed.
 
 ```bash
 pip install pyveoliaidf            # a final release
@@ -653,12 +653,12 @@ The custom component [home-assistant-veoliaidf](https://github.com/ssenart/home-
 Home Assistant's shared HTTP session keeps no cookies and does not trust the intermediate certificate of the Veolia site, so the component lets the library create its own session.
 
 ## Limitations
-PyVeoliaIDF relies on how the Veolia customer area is built. It calls the backend methods of the pages, and any change there may break this library. The library validates every answer and raises an `UnexpectedResponseError` that names what changed, rather than returning wrong data.
+pyveoliaidf relies on how the Veolia customer area is built. It calls the backend methods of the pages, and any change there may break this library. The library validates every answer and raises an `UnexpectedResponseError` that names what changed, rather than returning wrong data.
 
 The live tests (see below) are the early warning: run them regularly, or on a schedule. If it stops working, see [Reporting an issue](#reporting-an-issue).
 
 ## Reporting an issue
-Something does not work? Please open an issue at https://github.com/ssenart/PyVeoliaIDF/issues (the form asks for what follows). A good report is mostly a matter of a few facts.
+Something does not work? Please open an issue at https://github.com/ssenart/pyveoliaidf/issues (the form asks for what follows). A good report is mostly a matter of a few facts.
 
 ### First, check these
 1. **Does the website work?** Log in at https://connexion.leaudiledefrance.fr and open your consumption history. If the site is down, or your login fails there too, it is not the library.
@@ -733,8 +733,8 @@ If you found a way to read someone else's data, or a leak of credentials, do not
 ## Checkout and set up
 
 ```bash
-git clone https://github.com/ssenart/PyVeoliaIDF.git
-cd PyVeoliaIDF
+git clone https://github.com/ssenart/pyveoliaidf.git
+cd pyveoliaidf
 git switch develop              # the integration branch; see "Branches and versions"
 uv sync                         # creates .venv and installs the locked dependencies and the package, editable
 ```
@@ -890,7 +890,7 @@ Releases are created by the **Create Release** workflow (`.github/workflows/crea
 
 ### One-time setup
 * GitHub environments **`pypi`** and **`testpypi`** (Settings, Environments). Add required reviewers to `pypi` if you want a manual approval before a publication.
-* A **trusted publisher** on [PyPI](https://pypi.org/manage/account/publishing/) and on [TestPyPI](https://test.pypi.org/manage/account/publishing/) for the project: owner `ssenart`, repository `PyVeoliaIDF`, workflow `create-release.yaml`, environment `pypi` (respectively `testpypi`). There is no API token to store.
+* A **trusted publisher** on [PyPI](https://pypi.org/manage/account/publishing/) and on [TestPyPI](https://test.pypi.org/manage/account/publishing/) for the project: owner `ssenart`, repository `pyveoliaidf`, workflow `create-release.yaml`, environment `pypi` (respectively `testpypi`). There is no API token to store.
 * The repository secrets `VEOLIAIDF_USERNAME` and `VEOLIAIDF_PASSWORD`, for the live tests of CI.
 
 ### Steps
@@ -948,4 +948,4 @@ Never include credentials, tokens, cookies, or personal data from the site in an
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Project status
-PyVeoliaIDF has been initiated for integration with [Home Assistant](https://www.home-assistant.io/).
+pyveoliaidf has been initiated for integration with [Home Assistant](https://www.home-assistant.io/).

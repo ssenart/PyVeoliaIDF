@@ -1,9 +1,9 @@
-"""The errors of PyVeoliaIDF. Every one of them is a PyVeoliaIDFError."""
+"""The errors of pyveoliaidf. Every one of them is a PyVeoliaIDFError."""
 
 
 # ------------------------------------------------------------------------------------------------------------
 class PyVeoliaIDFError(Exception):
-    """The base of the errors that PyVeoliaIDF raises on its own."""
+    """The base of the errors that pyveoliaidf raises on its own."""
 
 
 # ------------------------------------------------------------------------------------------------------------

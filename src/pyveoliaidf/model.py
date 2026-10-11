@@ -1,4 +1,4 @@
-"""The data model of PyVeoliaIDF: what users get.
+"""The data model of pyveoliaidf: what users get.
 
 It follows what the Veolia backend offers: contracts with their meters and parties, and consumption histories by day,
 week or month. Volumes and indexes are cubic meters (Decimal), as the backend sends them, with liters and euros derived.

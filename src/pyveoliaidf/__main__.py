@@ -90,7 +90,7 @@ def main() -> int:
     try:
         result = asyncio.run(run(args, username, password))
     except Exception:  # noqa: BLE001 (the CLI reports any failure and exits)
-        print(f"An error occured while querying PyVeoliaIDF library : {traceback.format_exc()}")
+        print(f"An error occured while querying pyveoliaidf library : {traceback.format_exc()}")
         return 1
 
     print(json.dumps(result, indent=2))
