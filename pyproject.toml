@@ -18,11 +18,15 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "selenium>=4.50.0",
-    "openpyxl>=2.6.3",
+    "aiohttp>=3.10",
+    "certifi>=2023.7.22",
+    "pydantic>=2.10",
 ]
 
 [project.urls]
@@ -36,16 +40,46 @@ Download = "https://pypi.org/project/pyveoliaidf"
 pyveoliaidf = "pyveoliaidf.__main__:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["pyveoliaidf"]
+packages = ["src/pyveoliaidf"]
 
 [dependency-groups]
 dev = [
-    "flake8",
+    "hypothesis>=6.168.5",
+    "mypy>=2.4.0",
     "pytest",
+    "pytest-asyncio>=1.4.0",
     "pytest-cov",
     "python-dotenv",
+    "ruff>=0.17.0",
 ]
 
 [tool.uv]
 # The development environment is made of the dependency groups above.
 # The package itself is installed in editable mode by `uv sync`.
+
+[tool.mypy]
+strict = true
+exclude = [ ".venv" ]
+
+[tool.ruff]
+exclude = [ ".venv", "*.md" ]
+line-length = 120
+
+[tool.ruff.lint]
+# E501 is ignored: ruff format owns the line length, and long strings are left as they are.
+select = ["E", "F", "W", "I", "N", "B", "UP", "ARG", "RET", "BLE"]
+ignore = ["E501"]
+
+[tool.coverage.run]
+source = ["pyveoliaidf"]
+branch = true
+omit = ["*/pyveoliaidf/__main__.py"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+exclude_also = ["\\.\\.\\.$", "if TYPE_CHECKING:"]
+
+[tool.ruff.lint.per-file-ignores]
+# The fakes and the hooks of the tests have to take arguments that they do not use.
+"tests/*" = ["ARG"]
